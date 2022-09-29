@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中 压缩方式使用 vite-plugin-compression 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vite 性能优化">
+<meta property="og:url" content="http://example.com/2022/09/29/vite/index.html">
+<meta property="og:site_name" content="有个人走过1999">
+<meta property="og:description" content="vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中 压缩方式使用 vite-plugin-compression 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-29T12:14:01.655Z">
+<meta property="article:modified_time" content="2022-09-29T13:30:09.619Z">
+<meta property="article:author" content="Jacky Chueng">
+<meta property="article:tag" content="js">
+<meta property="article:tag" content="vite">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/09/29/vite/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Vite 性能优化 | 有个人走过1999</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">有个人走过1999</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">一生热爱 回头太难</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/09/29/vite/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="http://zhoup.top:7005/vue3img/jc.jpg">
+      <meta itemprop="name" content="Jacky Chueng">
+      <meta itemprop="description" content="四大爱好: 代码,学友,利物浦,美食">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有个人走过1999">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Vite 性能优化
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-09-29 20:14:01 / 修改时间：21:30:09" itemprop="dateCreated datePublished" datetime="2022-09-29T20:14:01+08:00">2022-09-29</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中</p>
+<h2 id="压缩方式"><a href="#压缩方式" class="headerlink" title="压缩方式"></a>压缩方式</h2><p>使用 <a target="_blank" rel="noopener" href="https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md">vite-plugin-compression</a> 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高效率，同时服务端在收到客户端请求的时候，也可以选择这些已经上传好了的gz文件，返回给浏览器自行解压。</p>
+<h3 id="使用方式如下"><a href="#使用方式如下" class="headerlink" title="使用方式如下"></a>使用方式如下</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add vite-plugin-compression -D</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> viteCompression <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-compression&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">viteCompression</span>(&#123;</span><br><span class="line">      <span class="attr">verbose</span>: <span class="literal">true</span>, <span class="comment">// 是否在控制台输出压缩日志</span></span><br><span class="line">      <span class="title function_">filter</span>(<span class="params">file</span>) &#123; <span class="comment">// 筛选哪些需要压缩的文件</span></span><br><span class="line">        <span class="comment">// 忽略css文件</span></span><br><span class="line">        <span class="keyword">return</span> !file.<span class="title function_">endsWith</span>(<span class="string">&#x27;.css&#x27;</span>)</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">threshold</span>: <span class="number">50</span> * <span class="number">1024</span>, <span class="comment">// 压缩阈值，大于设定值需要压缩</span></span><br><span class="line">      <span class="attr">deleteOriginFile</span>: <span class="literal">false</span>, <span class="comment">// 压缩后是否删除源文件</span></span><br><span class="line">      <span class="attr">disable</span>: <span class="literal">false</span>, <span class="comment">// 是否禁用该插件</span></span><br><span class="line">      <span class="attr">ext</span>: <span class="string">&#x27;.gz&#x27;</span>, <span class="comment">// 压缩文件的后缀名</span></span><br><span class="line">      <span class="attr">algorithm</span>: <span class="string">&#x27;gzip&#x27;</span> <span class="comment">// 压缩算法，可选值参考文档</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="打包分析工具"><a href="#打包分析工具" class="headerlink" title="打包分析工具"></a>打包分析工具</h2><p>安装 <a target="_blank" rel="noopener" href="https://github.com/btd/rollup-plugin-visualizer">rollup-plugin-visualizer</a>, 这是一款rollup打包分析插件，因为 vite 本身在构建阶段采用的就是 rollup，所以这个插件是依赖 rollup 的，大家不要与 webpack 打包的分析插件搞混淆了。</p>
+<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add rollup-plugin-visualizer -D</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 该插件在打包时生效，并且在构建结束后，在根目录下默认生成states.html，打开这个html可以看到各种产物的情况</span></span><br><span class="line"><span class="keyword">import</span> &#123; visualizer &#125; <span class="keyword">from</span> <span class="string">&#x27;rollup-plugin-visualizer&#x27;</span></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">visualizer</span>(&#123;</span><br><span class="line">      <span class="attr">filename</span>: <span class="string">&#x27;data.html&#x27;</span>, <span class="comment">// 分析文件的文件名，默认states.html</span></span><br><span class="line">      <span class="attr">open</span>: <span class="literal">true</span>, <span class="comment">// 是否构建后自动打开分析的html</span></span><br><span class="line">      <span class="attr">template</span>: <span class="string">&#x27;treemap&#x27;</span>, <span class="comment">// 分析模板，默认就是treemap也是最直观的，可选值见文档</span></span><br><span class="line">      <span class="comment">// ...其实默认调用visualizer函数就够了，具体的options配置可以参考文档根据自身需求来配置</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="第三方库用CDN方式引入"><a href="#第三方库用CDN方式引入" class="headerlink" title="第三方库用CDN方式引入"></a>第三方库用CDN方式引入</h2><p>在开发过程中，我们经常会引入一些第三方库，如 vue，但如果将其在构建阶段一并打包到产物中，那么体积可想而知，这时我们可以采用适当的CDN技术手段，将这些第三方库用 script 标签的形式从 CDN 引入，这样做的好处是，第一，构建产物体积减小了，效率方面有提高，第二，CDN可以缓存，第二次请求资源的时候，会利用强缓存或协商缓存，节约请求时间和资源。</p>
+<h3 id="安装-vite-plugin-cdn-import"><a href="#安装-vite-plugin-cdn-import" class="headerlink" title="安装 vite-plugin-cdn-import"></a>安装 <a target="_blank" rel="noopener" href="https://github.com/mmf-fe/vite-plugin-cdn-import#readme">vite-plugin-cdn-import</a></h3><h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add vite-plugin-cdn-import -D</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> importToCDN, &#123; autoComplete &#125; <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-cdn-import&#x27;</span></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">importToCDN</span>(&#123;</span><br><span class="line">      <span class="attr">modules</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">name</span>: <span class="string">&#x27;react&#x27;</span>, <span class="comment">// 你要cdn形式的三方包名</span></span><br><span class="line">          <span class="attr">var</span>: <span class="string">&#x27;React&#x27;</span>, <span class="comment">// 该包暴露在全局的名称</span></span><br><span class="line">          <span class="attr">path</span>: <span class="string">`umd/react.production.min.js`</span>, <span class="comment">// 第三方CDN链接路径，可以是你自己的服务器上的路径</span></span><br><span class="line">          <span class="comment">// ...更多配置参考文档</span></span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 上面这种方式适合自己灵活配置要求的开发人员，拥有自己的服务器，可以将源代码部署到上面的，因为你不知道开源的CDN资源什么时候会挂掉，但配置比较麻烦，如果你对自定义配置要求不多，可以考虑使用自动导入的方式，如下</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">importToCDN</span>(&#123;</span><br><span class="line">  <span class="attr">modules</span>: [</span><br><span class="line">    <span class="title function_">autoComplete</span>(<span class="string">&#x27;vue&#x27;</span>),</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这种方式，会自动从你开发版本，也就是package.json中的版本号为准，然后生成对应的CDN链接的script标签</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>当你使用了该插件，那么对应的第三方库，就不会打包到最终的产物里面</p>
+</blockquote>
+<h2 id="构建配置选项-build-options"><a href="#构建配置选项-build-options" class="headerlink" title="构建配置选项 build options"></a>构建配置选项 build options</h2><h3 id="assetsInlineLimit"><a href="#assetsInlineLimit" class="headerlink" title="assetsInlineLimit"></a>assetsInlineLimit</h3><ul>
+<li>类型 number</li>
+<li>默认值 4096 （4kb）</li>
+</ul>
+<p>小于此阈值的导入或引用资源将内联为 base64 编码，以避免额外的 http 请求。设置为 0 可以完全禁用此项</p>
+<h3 id="cssCodeSplit"><a href="#cssCodeSplit" class="headerlink" title="cssCodeSplit"></a>cssCodeSplit</h3><ul>
+<li>类型 boolean</li>
+<li>默认值 true</li>
+</ul>
+<p>启用&#x2F;禁用 CSS 代码拆分。当启用时，在异步 chunk 中导入的 CSS 将内联到异步 chunk 本身，并在其被加载时插入。</p>
+<p>如果禁用，整个项目中的所有 CSS 将被提取到一个 CSS 文件中。</p>
+<h3 id="sourcemap"><a href="#sourcemap" class="headerlink" title="sourcemap"></a>sourcemap</h3><ul>
+<li>类型 boolean</li>
+<li>默认值 false</li>
+</ul>
+<p>是否开启源码映射，关闭后将不会生成 .map 文件，体积将会大幅减少，但根据实际情况，看你是否希望在生产环境定位问题。</p>
+<h3 id="chunkSizeWarningLimit"><a href="#chunkSizeWarningLimit" class="headerlink" title="chunkSizeWarningLimit"></a>chunkSizeWarningLimit</h3><ul>
+<li>类型 number</li>
+<li>默认值 500 （500kb）</li>
+</ul>
+<p>当chunk的大小高于设定值后，触发警告，能够帮助你知道哪些chunk应该进一步拆分</p>
+<h3 id="terserOptions"><a href="#terserOptions" class="headerlink" title="terserOptions"></a>terserOptions</h3><p>该配置主要是利用 terser 的打包模式，vite 默认采用的是 esBuild，所以使用 terser 模式，需要将 minify 配置为 terser，然后做进一步操作</p>
+<ul>
+<li>将开发环境下的log，debugger去除</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">terserOptions</span>: &#123;</span><br><span class="line">  <span class="attr">compress</span>: &#123;</span><br><span class="line">    <span class="string">&#x27;drop_console&#x27;</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="string">&#x27;drop_debugger&#x27;</span>: <span class="literal">true</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>除此之外，terser还提供众多可以配置的构建选项，参看 <a target="_blank" rel="noopener" href="https://terser.org/">https://terser.org/</a></p>
+<h3 id="模块分割（模块联邦）"><a href="#模块分割（模块联邦）" class="headerlink" title="模块分割（模块联邦）"></a>模块分割（模块联邦）</h3><p>在不使用 CDN 情况下，我们依然需要将第三方包进行build，想想一下，如果你的入口js引入了vue，pinia，router这些，那么你在build之后会发现这些三方库全部被整合到了一个js文件中，导致体积过大，那么此时应该用到的就是模块分割</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 和前面一样，该配置属于rollup底层配置，需要写在rollupOptions对象中</span></span><br><span class="line"><span class="comment">// 示例就是将项目中的包，按照功能拆分出独立的模块，或者将一系列相关的功能包，合并到一个模块组合</span></span><br><span class="line"><span class="attr">rollupOptions</span>: &#123;</span><br><span class="line">  <span class="attr">manualChunks</span>: &#123;</span><br><span class="line">    <span class="attr">axios</span>: [<span class="string">&#x27;axios&#x27;</span>],</span><br><span class="line">    <span class="attr">jQuery</span>: [<span class="string">&#x27;jquery&#x27;</span>],</span><br><span class="line">    <span class="comment">// vue + pinia + router属于vue生态链，所以单独合成一个模块</span></span><br><span class="line">    <span class="attr">vue</span>: [<span class="string">&#x27;vue&#x27;</span>, <span class="string">&#x27;pinia&#x27;</span>, <span class="string">&#x27;vue-router&#x27;</span>]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用环境变量"><a href="#使用环境变量" class="headerlink" title="使用环境变量"></a>使用环境变量</h3><p>和 webpack 一样，vite 也可以通过配置环境变量来区分逻辑走向，例如 dev 环境用的 api 地址是 <code>http://test.api.com</code>,<br>而生产环境用的是 <code>http://prod.api.com</code>, 那么在使用这个变量就需要做区分，而与 webpack 不同的是，vite 并没有采用 <code>process.env.NODE_ENV</code>，而是使用 esModule 中的 <code>import.meta</code>来识别，具体如下</p>
+<p>首先在根目录下创建 <code>.env</code> 文件, 添加环境变量，注意以 <code>VITE_</code>开头</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">VITE_name = jacky</span><br></pre></td></tr></table></figure>
+
+<p>然后在任意 <code>.js</code> 文件中尝试打印 <code>import.meta.env</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">BASE_URL<span class="punctuation">:</span> <span class="string">&quot;/&quot;</span></span><br><span class="line">DEV<span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">MODE<span class="punctuation">:</span> <span class="string">&quot;development&quot;</span></span><br><span class="line">PROD<span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span></span><br><span class="line">SSR<span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span></span><br><span class="line">VITE_name<span class="punctuation">:</span> <span class="string">&quot;jacky&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以发现配置在 env 文件中的变量已经生效，需要注意一下几点</p>
+<ol>
+<li>mode 可自由设置</li>
+<li>环境变量前缀可自由设置</li>
+<li>vite 通过mode，来寻找对应env文件</li>
+</ol>
+<p>例如，如果 package.json 中 script 命令行中的设置</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dev<span class="punctuation">:</span> vite --mode dev</span><br></pre></td></tr></table></figure>
+
+<p>那么在运行中，vite会尝试寻找根目录下的 <code>.env.dev</code> 文件，后缀就是 –mode 后要跟的内容，如果是<code>.env.prod</code>文件，则需要把 –mode 设置为 prod。</p>
+<p>如果需要自定义环境变量前缀，需要在 <code>vite.config.js</code> 中设置 <code>envPrefix</code>: <code>your_custom_profixer</code>，然后在 env 文件中就以此为变量前缀</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="comment">// ....</span></span><br><span class="line">  <span class="attr">envPrefix</span>: <span class="string">&#x27;jc&#x27;</span>, <span class="comment">//环境变量以jc开头</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>env文件中设置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jc_name = 100</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/js/" rel="tag"># js</a>
+              <a href="/tags/vite/" rel="tag"># vite</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/09/29/person/" rel="next" title="person">
+      person <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%8B%E7%BC%A9%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">压缩方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F%E5%A6%82%E4%B8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">使用方式如下</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%93%E5%8C%85%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7"><span class="nav-number">2.</span> <span class="nav-text">打包分析工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-number">2.1.</span> <span class="nav-text">使用方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E6%96%B9%E5%BA%93%E7%94%A8CDN%E6%96%B9%E5%BC%8F%E5%BC%95%E5%85%A5"><span class="nav-number">3.</span> <span class="nav-text">第三方库用CDN方式引入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-vite-plugin-cdn-import"><span class="nav-number">3.1.</span> <span class="nav-text">安装 vite-plugin-cdn-import</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">使用方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E9%85%8D%E7%BD%AE%E9%80%89%E9%A1%B9-build-options"><span class="nav-number">4.</span> <span class="nav-text">构建配置选项 build options</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#assetsInlineLimit"><span class="nav-number">4.1.</span> <span class="nav-text">assetsInlineLimit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cssCodeSplit"><span class="nav-number">4.2.</span> <span class="nav-text">cssCodeSplit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sourcemap"><span class="nav-number">4.3.</span> <span class="nav-text">sourcemap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#chunkSizeWarningLimit"><span class="nav-number">4.4.</span> <span class="nav-text">chunkSizeWarningLimit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#terserOptions"><span class="nav-number">4.5.</span> <span class="nav-text">terserOptions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9D%97%E5%88%86%E5%89%B2%EF%BC%88%E6%A8%A1%E5%9D%97%E8%81%94%E9%82%A6%EF%BC%89"><span class="nav-number">4.6.</span> <span class="nav-text">模块分割（模块联邦）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">4.7.</span> <span class="nav-text">使用环境变量</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jacky Chueng"
+      src="http://zhoup.top:7005/vue3img/jc.jpg">
+  <p class="site-author-name" itemprop="name">Jacky Chueng</p>
+  <div class="site-description" itemprop="description">四大爱好: 代码,学友,利物浦,美食</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chensidi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chensidi" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/chensidi" title="掘金 → https:&#x2F;&#x2F;github.com&#x2F;chensidi" rel="noopener" target="_blank"><i class="fab fa fa-fw"></i>掘金</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jacky Chueng</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

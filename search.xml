@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>person</title>
+    <url>/2022/09/29/person/</url>
+    <content><![CDATA[<h2 id="个人介绍"><a href="#个人介绍" class="headerlink" title="个人介绍"></a>个人介绍</h2><p>my name is jacky cheung</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>Vite 性能优化</title>
+    <url>/2022/09/29/vite/</url>
+    <content><![CDATA[<p>vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中</p>
+<h2 id="压缩方式"><a href="#压缩方式" class="headerlink" title="压缩方式"></a>压缩方式</h2><p>使用 <a href="https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md">vite-plugin-compression</a> 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高效率，同时服务端在收到客户端请求的时候，也可以选择这些已经上传好了的gz文件，返回给浏览器自行解压。</p>
+<h3 id="使用方式如下"><a href="#使用方式如下" class="headerlink" title="使用方式如下"></a>使用方式如下</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add vite-plugin-compression -D</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> viteCompression <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-compression&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">viteCompression</span>(&#123;</span><br><span class="line">      <span class="attr">verbose</span>: <span class="literal">true</span>, <span class="comment">// 是否在控制台输出压缩日志</span></span><br><span class="line">      <span class="title function_">filter</span>(<span class="params">file</span>) &#123; <span class="comment">// 筛选哪些需要压缩的文件</span></span><br><span class="line">        <span class="comment">// 忽略css文件</span></span><br><span class="line">        <span class="keyword">return</span> !file.<span class="title function_">endsWith</span>(<span class="string">&#x27;.css&#x27;</span>)</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">threshold</span>: <span class="number">50</span> * <span class="number">1024</span>, <span class="comment">// 压缩阈值，大于设定值需要压缩</span></span><br><span class="line">      <span class="attr">deleteOriginFile</span>: <span class="literal">false</span>, <span class="comment">// 压缩后是否删除源文件</span></span><br><span class="line">      <span class="attr">disable</span>: <span class="literal">false</span>, <span class="comment">// 是否禁用该插件</span></span><br><span class="line">      <span class="attr">ext</span>: <span class="string">&#x27;.gz&#x27;</span>, <span class="comment">// 压缩文件的后缀名</span></span><br><span class="line">      <span class="attr">algorithm</span>: <span class="string">&#x27;gzip&#x27;</span> <span class="comment">// 压缩算法，可选值参考文档</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="打包分析工具"><a href="#打包分析工具" class="headerlink" title="打包分析工具"></a>打包分析工具</h2><p>安装 <a href="https://github.com/btd/rollup-plugin-visualizer">rollup-plugin-visualizer</a>, 这是一款rollup打包分析插件，因为 vite 本身在构建阶段采用的就是 rollup，所以这个插件是依赖 rollup 的，大家不要与 webpack 打包的分析插件搞混淆了。</p>
+<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add rollup-plugin-visualizer -D</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 该插件在打包时生效，并且在构建结束后，在根目录下默认生成states.html，打开这个html可以看到各种产物的情况</span></span><br><span class="line"><span class="keyword">import</span> &#123; visualizer &#125; <span class="keyword">from</span> <span class="string">&#x27;rollup-plugin-visualizer&#x27;</span></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">visualizer</span>(&#123;</span><br><span class="line">      <span class="attr">filename</span>: <span class="string">&#x27;data.html&#x27;</span>, <span class="comment">// 分析文件的文件名，默认states.html</span></span><br><span class="line">      <span class="attr">open</span>: <span class="literal">true</span>, <span class="comment">// 是否构建后自动打开分析的html</span></span><br><span class="line">      <span class="attr">template</span>: <span class="string">&#x27;treemap&#x27;</span>, <span class="comment">// 分析模板，默认就是treemap也是最直观的，可选值见文档</span></span><br><span class="line">      <span class="comment">// ...其实默认调用visualizer函数就够了，具体的options配置可以参考文档根据自身需求来配置</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="第三方库用CDN方式引入"><a href="#第三方库用CDN方式引入" class="headerlink" title="第三方库用CDN方式引入"></a>第三方库用CDN方式引入</h2><p>在开发过程中，我们经常会引入一些第三方库，如 vue，但如果将其在构建阶段一并打包到产物中，那么体积可想而知，这时我们可以采用适当的CDN技术手段，将这些第三方库用 script 标签的形式从 CDN 引入，这样做的好处是，第一，构建产物体积减小了，效率方面有提高，第二，CDN可以缓存，第二次请求资源的时候，会利用强缓存或协商缓存，节约请求时间和资源。</p>
+<h3 id="安装-vite-plugin-cdn-import"><a href="#安装-vite-plugin-cdn-import" class="headerlink" title="安装 vite-plugin-cdn-import"></a>安装 <a href="https://github.com/mmf-fe/vite-plugin-cdn-import#readme">vite-plugin-cdn-import</a></h3><h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add vite-plugin-cdn-import -D</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> importToCDN, &#123; autoComplete &#125; <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-cdn-import&#x27;</span></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">importToCDN</span>(&#123;</span><br><span class="line">      <span class="attr">modules</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">name</span>: <span class="string">&#x27;react&#x27;</span>, <span class="comment">// 你要cdn形式的三方包名</span></span><br><span class="line">          <span class="attr">var</span>: <span class="string">&#x27;React&#x27;</span>, <span class="comment">// 该包暴露在全局的名称</span></span><br><span class="line">          <span class="attr">path</span>: <span class="string">`umd/react.production.min.js`</span>, <span class="comment">// 第三方CDN链接路径，可以是你自己的服务器上的路径</span></span><br><span class="line">          <span class="comment">// ...更多配置参考文档</span></span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 上面这种方式适合自己灵活配置要求的开发人员，拥有自己的服务器，可以将源代码部署到上面的，因为你不知道开源的CDN资源什么时候会挂掉，但配置比较麻烦，如果你对自定义配置要求不多，可以考虑使用自动导入的方式，如下</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">importToCDN</span>(&#123;</span><br><span class="line">  <span class="attr">modules</span>: [</span><br><span class="line">    <span class="title function_">autoComplete</span>(<span class="string">&#x27;vue&#x27;</span>),</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这种方式，会自动从你开发版本，也就是package.json中的版本号为准，然后生成对应的CDN链接的script标签</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>当你使用了该插件，那么对应的第三方库，就不会打包到最终的产物里面</p>
+</blockquote>
+<h2 id="构建配置选项-build-options"><a href="#构建配置选项-build-options" class="headerlink" title="构建配置选项 build options"></a>构建配置选项 build options</h2><h3 id="assetsInlineLimit"><a href="#assetsInlineLimit" class="headerlink" title="assetsInlineLimit"></a>assetsInlineLimit</h3><ul>
+<li>类型 number</li>
+<li>默认值 4096 （4kb）</li>
+</ul>
+<p>小于此阈值的导入或引用资源将内联为 base64 编码，以避免额外的 http 请求。设置为 0 可以完全禁用此项</p>
+<h3 id="cssCodeSplit"><a href="#cssCodeSplit" class="headerlink" title="cssCodeSplit"></a>cssCodeSplit</h3><ul>
+<li>类型 boolean</li>
+<li>默认值 true</li>
+</ul>
+<p>启用&#x2F;禁用 CSS 代码拆分。当启用时，在异步 chunk 中导入的 CSS 将内联到异步 chunk 本身，并在其被加载时插入。</p>
+<p>如果禁用，整个项目中的所有 CSS 将被提取到一个 CSS 文件中。</p>
+<h3 id="sourcemap"><a href="#sourcemap" class="headerlink" title="sourcemap"></a>sourcemap</h3><ul>
+<li>类型 boolean</li>
+<li>默认值 false</li>
+</ul>
+<p>是否开启源码映射，关闭后将不会生成 .map 文件，体积将会大幅减少，但根据实际情况，看你是否希望在生产环境定位问题。</p>
+<h3 id="chunkSizeWarningLimit"><a href="#chunkSizeWarningLimit" class="headerlink" title="chunkSizeWarningLimit"></a>chunkSizeWarningLimit</h3><ul>
+<li>类型 number</li>
+<li>默认值 500 （500kb）</li>
+</ul>
+<p>当chunk的大小高于设定值后，触发警告，能够帮助你知道哪些chunk应该进一步拆分</p>
+<h3 id="terserOptions"><a href="#terserOptions" class="headerlink" title="terserOptions"></a>terserOptions</h3><p>该配置主要是利用 terser 的打包模式，vite 默认采用的是 esBuild，所以使用 terser 模式，需要将 minify 配置为 terser，然后做进一步操作</p>
+<ul>
+<li>将开发环境下的log，debugger去除</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="attr">terserOptions</span>: &#123;</span><br><span class="line">  <span class="attr">compress</span>: &#123;</span><br><span class="line">    <span class="string">&#x27;drop_console&#x27;</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="string">&#x27;drop_debugger&#x27;</span>: <span class="literal">true</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>除此之外，terser还提供众多可以配置的构建选项，参看 <a href="https://terser.org/">https://terser.org/</a></p>
+<h3 id="模块分割（模块联邦）"><a href="#模块分割（模块联邦）" class="headerlink" title="模块分割（模块联邦）"></a>模块分割（模块联邦）</h3><p>在不使用 CDN 情况下，我们依然需要将第三方包进行build，想想一下，如果你的入口js引入了vue，pinia，router这些，那么你在build之后会发现这些三方库全部被整合到了一个js文件中，导致体积过大，那么此时应该用到的就是模块分割</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 和前面一样，该配置属于rollup底层配置，需要写在rollupOptions对象中</span></span><br><span class="line"><span class="comment">// 示例就是将项目中的包，按照功能拆分出独立的模块，或者将一系列相关的功能包，合并到一个模块组合</span></span><br><span class="line"><span class="attr">rollupOptions</span>: &#123;</span><br><span class="line">  <span class="attr">manualChunks</span>: &#123;</span><br><span class="line">    <span class="attr">axios</span>: [<span class="string">&#x27;axios&#x27;</span>],</span><br><span class="line">    <span class="attr">jQuery</span>: [<span class="string">&#x27;jquery&#x27;</span>],</span><br><span class="line">    <span class="comment">// vue + pinia + router属于vue生态链，所以单独合成一个模块</span></span><br><span class="line">    <span class="attr">vue</span>: [<span class="string">&#x27;vue&#x27;</span>, <span class="string">&#x27;pinia&#x27;</span>, <span class="string">&#x27;vue-router&#x27;</span>]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用环境变量"><a href="#使用环境变量" class="headerlink" title="使用环境变量"></a>使用环境变量</h3><p>和 webpack 一样，vite 也可以通过配置环境变量来区分逻辑走向，例如 dev 环境用的 api 地址是 <code>http://test.api.com</code>,<br>而生产环境用的是 <code>http://prod.api.com</code>, 那么在使用这个变量就需要做区分，而与 webpack 不同的是，vite 并没有采用 <code>process.env.NODE_ENV</code>，而是使用 esModule 中的 <code>import.meta</code>来识别，具体如下</p>
+<p>首先在根目录下创建 <code>.env</code> 文件, 添加环境变量，注意以 <code>VITE_</code>开头</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">VITE_name = jacky</span><br></pre></td></tr></table></figure>
+
+<p>然后在任意 <code>.js</code> 文件中尝试打印 <code>import.meta.env</code></p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">BASE_URL<span class="punctuation">:</span> <span class="string">&quot;/&quot;</span></span><br><span class="line">DEV<span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">MODE<span class="punctuation">:</span> <span class="string">&quot;development&quot;</span></span><br><span class="line">PROD<span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span></span><br><span class="line">SSR<span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span></span><br><span class="line">VITE_name<span class="punctuation">:</span> <span class="string">&quot;jacky&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以发现配置在 env 文件中的变量已经生效，需要注意一下几点</p>
+<ol>
+<li>mode 可自由设置</li>
+<li>环境变量前缀可自由设置</li>
+<li>vite 通过mode，来寻找对应env文件</li>
+</ol>
+<p>例如，如果 package.json 中 script 命令行中的设置</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">dev<span class="punctuation">:</span> vite --mode dev</span><br></pre></td></tr></table></figure>
+
+<p>那么在运行中，vite会尝试寻找根目录下的 <code>.env.dev</code> 文件，后缀就是 –mode 后要跟的内容，如果是<code>.env.prod</code>文件，则需要把 –mode 设置为 prod。</p>
+<p>如果需要自定义环境变量前缀，需要在 <code>vite.config.js</code> 中设置 <code>envPrefix</code>: <code>your_custom_profixer</code>，然后在 env 文件中就以此为变量前缀</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="comment">// ....</span></span><br><span class="line">  <span class="attr">envPrefix</span>: <span class="string">&#x27;jc&#x27;</span>, <span class="comment">//环境变量以jc开头</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>env文件中设置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">jc_name = 100</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>js</tag>
+        <tag>vite</tag>
+      </tags>
+  </entry>
+</search>
