@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>person</title>
-    <url>/2022/09/29/person/</url>
-    <content><![CDATA[<h2 id="个人介绍"><a href="#个人介绍" class="headerlink" title="个人介绍"></a>个人介绍</h2><p>my name is jacky cheung</p>
-]]></content>
-  </entry>
-  <entry>
     <title>Vite 性能优化</title>
     <url>/2022/09/29/vite/</url>
     <content><![CDATA[<p>vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中</p>
