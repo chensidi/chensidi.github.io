@@ -20,18 +20,18 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。 需要一个git辅助提交工具前言">
+  <meta name="description" content="当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="commit-lint-steps">
+<meta property="og:title" content="git提交规范定制流程">
 <meta property="og:url" content="http://example.com/2022/10/01/commit-lint-steps/index.html">
 <meta property="og:site_name" content="有个人走过1999">
-<meta property="og:description" content="当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。 需要一个git辅助提交工具前言">
+<meta property="og:description" content="当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/imgs/1.jpg">
 <meta property="og:image" content="http://example.com/imgs/2.jpg">
 <meta property="og:image" content="http://example.com/imgs/3.jpg">
 <meta property="article:published_time" content="2022-10-01T04:40:45.000Z">
-<meta property="article:modified_time" content="2022-10-03T13:37:35.718Z">
+<meta property="article:modified_time" content="2022-10-03T14:08:32.046Z">
 <meta property="article:author" content="Jacky Chueng">
 <meta property="article:tag" content="node">
 <meta property="article:tag" content="git">
@@ -51,7 +51,7 @@
   };
 </script>
 
-  <title>commit-lint-steps | 有个人走过1999</title>
+  <title>git提交规范定制流程 | 有个人走过1999</title>
   
 
 
@@ -213,7 +213,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          commit-lint-steps
+          git提交规范定制流程
         </h1>
 
         <div class="post-meta">
@@ -230,7 +230,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-10-03 21:37:35" itemprop="dateModified" datetime="2022-10-03T21:37:35+08:00">2022-10-03</time>
+                <time title="修改时间：2022-10-03 22:08:32" itemprop="dateModified" datetime="2022-10-03T22:08:32+08:00">2022-10-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -243,6 +243,7 @@
             </span>
 
           
+            <div class="post-description">当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。</div>
 
         </div>
       </header>
@@ -253,8 +254,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。</p>
-<h2 id="需要一个git辅助提交工具"><a href="#需要一个git辅助提交工具" class="headerlink" title="需要一个git辅助提交工具"></a>需要一个git辅助提交工具</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>很多人在使用git提交代码的时候，通常会使用命令行，例如 <code>git commit -m &#39;评论组件功能编码&#39;</code>，这样没有问题，甚至你直接使用ide自带的工具也能提交，但是其他人并不知道你这个描述，代表的是哪种提交类型，因为我们希望其他人在看到这条记录的时候，能够一眼就能看出这是哪类的 commit，所以社区内逐渐形成了多种 commit 格式规范，典型的就是<code>约定式提交</code>，或者 <code>conventionalcommits</code>，这是基于angular约定的一种规范，详情可参考<a target="_blank" rel="noopener" href="https://www.conventionalcommits.org/en/v1.0.0/">约定式提交规范</a></p>
+        <h2 id="需要一个git辅助提交工具"><a href="#需要一个git辅助提交工具" class="headerlink" title="需要一个git辅助提交工具"></a>需要一个git辅助提交工具</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>很多人在使用git提交代码的时候，通常会使用命令行，例如 <code>git commit -m &#39;评论组件功能编码&#39;</code>，这样没有问题，甚至你直接使用ide自带的工具也能提交，但是其他人并不知道你这个描述，代表的是哪种提交类型，因为我们希望其他人在看到这条记录的时候，能够一眼就能看出这是哪类的 commit，所以社区内逐渐形成了多种 commit 格式规范，典型的就是<code>约定式提交</code>，或者 <code>conventionalcommits</code>，这是基于angular约定的一种规范，详情可参考<a target="_blank" rel="noopener" href="https://www.conventionalcommits.org/en/v1.0.0/">约定式提交规范</a></p>
 <h3 id="提交范例"><a href="#提交范例" class="headerlink" title="提交范例"></a>提交范例</h3><p>在约定式提交规范里，有以下几种格式</p>
 <ul>
 <li><p>新功能开发</p>
@@ -354,8 +354,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/09/30/custom-cli/" rel="prev" title="custom-cli">
-      <i class="fa fa-chevron-left"></i> custom-cli
+    <a href="/2022/09/30/custom-cli/" rel="prev" title="自定义脚手架">
+      <i class="fa fa-chevron-left"></i> 自定义脚手架
     </a></div>
       <div class="post-nav-item"></div>
     </div>
@@ -401,7 +401,6 @@
     <span class="toggle-line toggle-line-middle"></span>
     <span class="toggle-line toggle-line-last"></span>
   </div>
-
   <aside class="sidebar">
     <div class="sidebar-inner">
 
@@ -461,6 +460,7 @@
 
 
 
+        <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=189865&auto=1&height=66"></iframe>
       </div>
 
     </div>

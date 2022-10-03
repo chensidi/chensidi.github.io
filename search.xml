@@ -1,10 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>commit-lint-steps</title>
+    <title>自定义脚手架</title>
+    <url>/2022/09/30/custom-cli/</url>
+    <content><![CDATA[<h2 id="自定义cli"><a href="#自定义cli" class="headerlink" title="自定义cli"></a>自定义cli</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>先使用npm 或者 yarn，完成package.json 的创建，命令如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn init -y </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这是默认配置，你也可以不用-y，然后按照它的提示一步一步往下走</span></span><br></pre></td></tr></table></figure>
+
+<p>然后添加命令行入口文件，我是在根目录下建立 <code>cli</code> 文件夹，并添加 <code>index.js</code>，可以先随便写一些内容如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;cli start&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这时候我们用node去执行，看看是否有输出</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">node ./cli/index</span><br></pre></td></tr></table></figure>
+
+<p>可以看到确实有输出，但是如何用命令行形式将其输出？例如</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">希望这样的命令行，就能将index.js内容输出</span></span><br><span class="line">jacky</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是生成自定义的cli，很简单其实，往下看</p>
+<h3 id="cli生成"><a href="#cli生成" class="headerlink" title="cli生成"></a>cli生成</h3><p>找到package.json，添加bin字段，并对应配置，如下</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;bin&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jacky&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./cli/index.js&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>意思就是，定义一个cli命令，并且指定其入口执行js文件</p>
+<p>接下来就是，将这个命令链接到全局，我们能够在任何目录下通过这个命令来执行 <code>cli/index.js</code>中的代码<br>操作如下，在项目根目录，执行</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm link</span><br></pre></td></tr></table></figure>
+
+<p>这个时候我们可以查看是否cli命令行已经生成了</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm list -g</span><br></pre></td></tr></table></figure>
+
+<p>这是我们可以尝试在命令行里执行 jakcy，看看有没有反应，结果肯定是报错，因为我们的入口文件，需要指定在node环境下运行，就需要在该文件头部定义</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">#!usr/bin/env node</span><br></pre></td></tr></table></figure>
+
+<p>这样就能够让代码正确运行在node环境，重新执行jacky命令，终端就会输出index.js 内容</p>
+<blockquote>
+<p>需要注意，如果添加头部配置后，重新执行命令依然报错，可以先解除命令，在根目录执行 <code>npm unlink jacky-cli</code>,然后全局卸载掉 <code>npm uninstall jacky-cli</code>, 然后重新 <code>npm link</code>, 这样重新走一遍流程就能解决了</p>
+</blockquote>
+<h3 id="命令行参数"><a href="#命令行参数" class="headerlink" title="命令行参数"></a>命令行参数</h3><p>上面我们介绍了 cli 的最基本配置过程，那么用户在使用 cli 的时候，肯定会有参数支持，例如 vite 支持 –template，rollup 支持 –output，这些就是参数，也就是让命令行走不同的逻辑分支，完成不同功能。</p>
+<h4 id="安装commander依赖"><a href="#安装commander依赖" class="headerlink" title="安装commander依赖"></a>安装commander依赖</h4><p><code>commander</code> 是一款解决命令行问题的npm包，大部分脚手架工具都会安装这个包，安装它的目的就是帮助我们去处理输入的命令参数。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i commander</span><br></pre></td></tr></table></figure>
+
+<p>然后我们可以在 index.js 中添加内容</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要从包里导出program对象</span></span><br><span class="line"><span class="keyword">const</span> &#123; program &#125; = <span class="built_in">require</span>(<span class="string">&quot;commander&quot;</span>);</span><br><span class="line"></span><br><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;init&#x27;</span>) <span class="comment">// 配置命令 =&gt; jacky init</span></span><br><span class="line">  .<span class="title function_">option</span>(<span class="string">&#x27;--type &lt;char&gt;&#x27;</span>, <span class="string">&#x27;input your type&#x27;</span>, <span class="string">&#x27;vue&#x27;</span>) <span class="comment">// 配置参数 =&gt; jacky init --type react</span></span><br><span class="line">  .<span class="title function_">action</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res)</span><br><span class="line">    <span class="comment">// &#123; type: &#x27;react&#x27; &#125;</span></span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解析输入的命令参数</span></span><br><span class="line">program.<span class="title function_">parse</span>(process.<span class="property">argv</span>)</span><br></pre></td></tr></table></figure>
+
+<p>commander 包提供了一个 program 的对象，方便我们快速地对命令行内容操作和配置，当然它内部还提供了更强大的功能，有兴趣可以移步官网<br>这里重点介绍program对象</p>
+<ul>
+<li>command方法，定义命令名称，配置后会生成如，<code>jacky init</code>的命令</li>
+<li>option方法，定义命令参数，是针对上述命令完成进一步配置的，可设置多个option，可以接受三个参数<ul>
+<li>参数1，参数名称和类型，必填</li>
+<li>参数2，参数类型说明，可选</li>
+<li>参数3，参数默认值，可选</li>
+</ul>
+</li>
+<li>action方法，在输入完命令后的回调函数，接收的参数就是输入的命令内容组成的对象</li>
+</ul>
+<h4 id="安装inquirer依赖"><a href="#安装inquirer依赖" class="headerlink" title="安装inquirer依赖"></a>安装inquirer依赖</h4><p>inquirer是提供给用户在命令行交互的包，例如询问，输入，选择等多种交互方式</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i inquirer</span><br></pre></td></tr></table></figure>
+
+<p>然后我们在index.js 中再添加一条命令，并且加入交互操作</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  .<span class="title function_">action</span>(<span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="title function_">prompt</span>([</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="string">&#x27;input&#x27;</span>, <span class="comment">// 交互类型，输入形式</span></span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;name&#x27;</span>, <span class="comment">// 字段名称</span></span><br><span class="line">        <span class="attr">default</span>: <span class="string">&#x27;jacky cheung&#x27;</span>, <span class="comment">// 默认值</span></span><br><span class="line">        <span class="attr">message</span>: <span class="string">&#x27;please input your name&#x27;</span> <span class="comment">// 交互信息</span></span><br><span class="line">      &#125;</span><br><span class="line">    ])</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;res: &#x27;</span>, res)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>然后我们敲下 <code>jacky create</code>, 终端会出现提示，然后我们输入一些内容，看看会是什么现象</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PS D:\JackyProgram\jacky-cli&gt; jacky create    </span><br><span class="line">? please input your name jacky cheung</span><br><span class="line">res:  &#123; name: &#x27;jacky cheung&#x27; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>打印的结果就是，将prompt配置的字段整合为一个对象，当然这里介绍的都是基本操作，更多的api请参考官网，这里是做铺垫为了后面的项目</p>
+<p>propmt接受的是一个数组，也就是询问的条数</p>
+<ul>
+<li>type，交互类型，如 input, confirm, checkbox, list, number, password等</li>
+<li>name，字段名称，也就是最终prompt的返回的结果，由这些字段组装而成</li>
+<li>default，字段默认值，如果直接按回车，就以该值作为输入值</li>
+<li>message，交互提示说明文字，在交互时会给予提示</li>
+</ul>
+<p>prompt本身返回一个promise，所以你可以使用 <code>async/await</code>，也可以使用 <code>.then</code> 形式做后续操作。</p>
+<h2 id="实现Git规范"><a href="#实现Git规范" class="headerlink" title="实现Git规范"></a>实现Git规范</h2><p>前面的内容已经介绍了如何完成简单的cli，并且能够处理命令和交互，这一节我们讨论如何利用cli实现对git方面的提交约束</p>
+<h3 id="jacky-git-命令"><a href="#jacky-git-命令" class="headerlink" title="jacky git 命令"></a>jacky git 命令</h3><p>我们期望有这样一个命令，<code>jacky git</code>，然后通过参数，完成对git规范的配置，配置git规范的流程见另一篇文章</p>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>node.js</tag>
+        <tag>cli</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>git提交规范定制流程</title>
     <url>/2022/10/01/commit-lint-steps/</url>
-    <content><![CDATA[<p>当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。</p>
-<h2 id="需要一个git辅助提交工具"><a href="#需要一个git辅助提交工具" class="headerlink" title="需要一个git辅助提交工具"></a>需要一个git辅助提交工具</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>很多人在使用git提交代码的时候，通常会使用命令行，例如 <code>git commit -m &#39;评论组件功能编码&#39;</code>，这样没有问题，甚至你直接使用ide自带的工具也能提交，但是其他人并不知道你这个描述，代表的是哪种提交类型，因为我们希望其他人在看到这条记录的时候，能够一眼就能看出这是哪类的 commit，所以社区内逐渐形成了多种 commit 格式规范，典型的就是<code>约定式提交</code>，或者 <code>conventionalcommits</code>，这是基于angular约定的一种规范，详情可参考<a href="https://www.conventionalcommits.org/en/v1.0.0/">约定式提交规范</a></p>
+    <content><![CDATA[<h2 id="需要一个git辅助提交工具"><a href="#需要一个git辅助提交工具" class="headerlink" title="需要一个git辅助提交工具"></a>需要一个git辅助提交工具</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>很多人在使用git提交代码的时候，通常会使用命令行，例如 <code>git commit -m &#39;评论组件功能编码&#39;</code>，这样没有问题，甚至你直接使用ide自带的工具也能提交，但是其他人并不知道你这个描述，代表的是哪种提交类型，因为我们希望其他人在看到这条记录的时候，能够一眼就能看出这是哪类的 commit，所以社区内逐渐形成了多种 commit 格式规范，典型的就是<code>约定式提交</code>，或者 <code>conventionalcommits</code>，这是基于angular约定的一种规范，详情可参考<a href="https://www.conventionalcommits.org/en/v1.0.0/">约定式提交规范</a></p>
 <h3 id="提交范例"><a href="#提交范例" class="headerlink" title="提交范例"></a>提交范例</h3><p>在约定式提交规范里，有以下几种格式</p>
 <ul>
 <li><p>新功能开发</p>
@@ -95,96 +174,9 @@
       </tags>
   </entry>
   <entry>
-    <title>custom-cli</title>
-    <url>/2022/09/30/custom-cli/</url>
-    <content><![CDATA[<p>平时大家经常用的命令行工具，如 <code>cra</code>, <code>vite</code>, <code>npm</code> 等，都是在命令窗口进行操作，那么不少同学会疑问，这些所谓的 <code>cli</code>是如何实现的，那么这篇文章将介绍如何构建一个自己的命令行工具，目标如下</p>
-<ol>
-<li>搭建好自定义cli，能够做出一系列命令操作</li>
-<li>用此cli，给项目添加git的commit规范</li>
-<li>给项目添加eslint</li>
-</ol>
-<h2 id="自定义cli"><a href="#自定义cli" class="headerlink" title="自定义cli"></a>自定义cli</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>先使用npm 或者 yarn，完成package.json 的创建，命令如下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn init -y </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这是默认配置，你也可以不用-y，然后按照它的提示一步一步往下走</span></span><br></pre></td></tr></table></figure>
-
-<p>然后添加命令行入口文件，我是在根目录下建立 <code>cli</code> 文件夹，并添加 <code>index.js</code>，可以先随便写一些内容如下</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;cli start&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<p>这时候我们用node去执行，看看是否有输出</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">node ./cli/index</span><br></pre></td></tr></table></figure>
-
-<p>可以看到确实有输出，但是如何用命令行形式将其输出？例如</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">希望这样的命令行，就能将index.js内容输出</span></span><br><span class="line">jacky</span><br></pre></td></tr></table></figure>
-
-<p>接下来就是生成自定义的cli，很简单其实，往下看</p>
-<h3 id="cli生成"><a href="#cli生成" class="headerlink" title="cli生成"></a>cli生成</h3><p>找到package.json，添加bin字段，并对应配置，如下</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;bin&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jacky&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./cli/index.js&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>意思就是，定义一个cli命令，并且指定其入口执行js文件</p>
-<p>接下来就是，将这个命令链接到全局，我们能够在任何目录下通过这个命令来执行 <code>cli/index.js</code>中的代码<br>操作如下，在项目根目录，执行</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm link</span><br></pre></td></tr></table></figure>
-
-<p>这个时候我们可以查看是否cli命令行已经生成了</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm list -g</span><br></pre></td></tr></table></figure>
-
-<p>这是我们可以尝试在命令行里执行 jakcy，看看有没有反应，结果肯定是报错，因为我们的入口文件，需要指定在node环境下运行，就需要在该文件头部定义</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">#!usr/bin/env node</span><br></pre></td></tr></table></figure>
-
-<p>这样就能够让代码正确运行在node环境，重新执行jacky命令，终端就会输出index.js 内容</p>
-<blockquote>
-<p>需要注意，如果添加头部配置后，重新执行命令依然报错，可以先解除命令，在根目录执行 <code>npm unlink jacky-cli</code>,然后全局卸载掉 <code>npm uninstall jacky-cli</code>, 然后重新 <code>npm link</code>, 这样重新走一遍流程就能解决了</p>
-</blockquote>
-<h3 id="命令行参数"><a href="#命令行参数" class="headerlink" title="命令行参数"></a>命令行参数</h3><p>上面我们介绍了 cli 的最基本配置过程，那么用户在使用 cli 的时候，肯定会有参数支持，例如 vite 支持 –template，rollup 支持 –output，这些就是参数，也就是让命令行走不同的逻辑分支，完成不同功能。</p>
-<h4 id="安装commander依赖"><a href="#安装commander依赖" class="headerlink" title="安装commander依赖"></a>安装commander依赖</h4><p><code>commander</code> 是一款解决命令行问题的npm包，大部分脚手架工具都会安装这个包，安装它的目的就是帮助我们去处理输入的命令参数。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i commander</span><br></pre></td></tr></table></figure>
-
-<p>然后我们可以在 index.js 中添加内容</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要从包里导出program对象</span></span><br><span class="line"><span class="keyword">const</span> &#123; program &#125; = <span class="built_in">require</span>(<span class="string">&quot;commander&quot;</span>);</span><br><span class="line"></span><br><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;init&#x27;</span>) <span class="comment">// 配置命令 =&gt; jacky init</span></span><br><span class="line">  .<span class="title function_">option</span>(<span class="string">&#x27;--type &lt;char&gt;&#x27;</span>, <span class="string">&#x27;input your type&#x27;</span>, <span class="string">&#x27;vue&#x27;</span>) <span class="comment">// 配置参数 =&gt; jacky init --type react</span></span><br><span class="line">  .<span class="title function_">action</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res)</span><br><span class="line">    <span class="comment">// &#123; type: &#x27;react&#x27; &#125;</span></span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解析输入的命令参数</span></span><br><span class="line">program.<span class="title function_">parse</span>(process.<span class="property">argv</span>)</span><br></pre></td></tr></table></figure>
-
-<p>commander 包提供了一个 program 的对象，方便我们快速地对命令行内容操作和配置，当然它内部还提供了更强大的功能，有兴趣可以移步官网<br>这里重点介绍program对象</p>
-<ul>
-<li>command方法，定义命令名称，配置后会生成如，<code>jacky init</code>的命令</li>
-<li>option方法，定义命令参数，是针对上述命令完成进一步配置的，可设置多个option，可以接受三个参数<ul>
-<li>参数1，参数名称和类型，必填</li>
-<li>参数2，参数类型说明，可选</li>
-<li>参数3，参数默认值，可选</li>
-</ul>
-</li>
-<li>action方法，在输入完命令后的回调函数，接收的参数就是输入的命令内容组成的对象</li>
-</ul>
-<h4 id="安装inquirer依赖"><a href="#安装inquirer依赖" class="headerlink" title="安装inquirer依赖"></a>安装inquirer依赖</h4><p>inquirer是提供给用户在命令行交互的包，例如询问，输入，选择等多种交互方式</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i inquirer</span><br></pre></td></tr></table></figure>
-
-<p>然后我们在index.js 中再添加一条命令，并且加入交互操作</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  .<span class="title function_">action</span>(<span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="title function_">prompt</span>([</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="string">&#x27;input&#x27;</span>, <span class="comment">// 交互类型，输入形式</span></span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;name&#x27;</span>, <span class="comment">// 字段名称</span></span><br><span class="line">        <span class="attr">default</span>: <span class="string">&#x27;jacky cheung&#x27;</span>, <span class="comment">// 默认值</span></span><br><span class="line">        <span class="attr">message</span>: <span class="string">&#x27;please input your name&#x27;</span> <span class="comment">// 交互信息</span></span><br><span class="line">      &#125;</span><br><span class="line">    ])</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;res: &#x27;</span>, res)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
-
-<p>然后我们敲下 <code>jacky create</code>, 终端会出现提示，然后我们输入一些内容，看看会是什么现象</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PS D:\JackyProgram\jacky-cli&gt; jacky create    </span><br><span class="line">? please input your name jacky cheung</span><br><span class="line">res:  &#123; name: &#x27;jacky cheung&#x27; &#125;</span><br></pre></td></tr></table></figure>
-
-<p>打印的结果就是，将prompt配置的字段整合为一个对象，当然这里介绍的都是基本操作，更多的api请参考官网，这里是做铺垫为了后面的项目</p>
-<p>propmt接受的是一个数组，也就是询问的条数</p>
-<ul>
-<li>type，交互类型，如 input, confirm, checkbox, list, number, password等</li>
-<li>name，字段名称，也就是最终prompt的返回的结果，由这些字段组装而成</li>
-<li>default，字段默认值，如果直接按回车，就以该值作为输入值</li>
-<li>message，交互提示说明文字，在交互时会给予提示</li>
-</ul>
-<p>prompt本身返回一个promise，所以你可以使用 <code>async/await</code>，也可以使用 <code>.then</code> 形式做后续操作。</p>
-<h2 id="实现Git规范"><a href="#实现Git规范" class="headerlink" title="实现Git规范"></a>实现Git规范</h2><p>前面的内容已经介绍了如何完成简单的cli，并且能够处理命令和交互，这一节我们讨论如何利用cli实现对git方面的提交约束</p>
-<h3 id="jacky-git-命令"><a href="#jacky-git-命令" class="headerlink" title="jacky git 命令"></a>jacky git 命令</h3><p>我们期望有这样一个命令，<code>jacky git</code>，然后通过参数，完成对git规范的配置，配置git规范的流程见另一篇文章</p>
-]]></content>
-      <categories>
-        <category>web</category>
-      </categories>
-      <tags>
-        <tag>node.js</tag>
-        <tag>cli</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Vite 性能优化</title>
     <url>/2022/09/29/vite/</url>
-    <content><![CDATA[<p>vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中</p>
-<h2 id="压缩方式"><a href="#压缩方式" class="headerlink" title="压缩方式"></a>压缩方式</h2><p>使用 <a href="https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md">vite-plugin-compression</a> 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高效率，同时服务端在收到客户端请求的时候，也可以选择这些已经上传好了的gz文件，返回给浏览器自行解压。</p>
+    <content><![CDATA[<h2 id="压缩方式"><a href="#压缩方式" class="headerlink" title="压缩方式"></a>压缩方式</h2><p>使用 <a href="https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md">vite-plugin-compression</a> 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高效率，同时服务端在收到客户端请求的时候，也可以选择这些已经上传好了的gz文件，返回给浏览器自行解压。</p>
 <h3 id="使用方式如下"><a href="#使用方式如下" class="headerlink" title="使用方式如下"></a>使用方式如下</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add vite-plugin-compression -D</span><br></pre></td></tr></table></figure>
 
 <figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> viteCompression <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-compression&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">viteCompression</span>(&#123;</span><br><span class="line">      <span class="attr">verbose</span>: <span class="literal">true</span>, <span class="comment">// 是否在控制台输出压缩日志</span></span><br><span class="line">      <span class="title function_">filter</span>(<span class="params">file</span>) &#123; <span class="comment">// 筛选哪些需要压缩的文件</span></span><br><span class="line">        <span class="comment">// 忽略css文件</span></span><br><span class="line">        <span class="keyword">return</span> !file.<span class="title function_">endsWith</span>(<span class="string">&#x27;.css&#x27;</span>)</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">threshold</span>: <span class="number">50</span> * <span class="number">1024</span>, <span class="comment">// 压缩阈值，大于设定值需要压缩</span></span><br><span class="line">      <span class="attr">deleteOriginFile</span>: <span class="literal">false</span>, <span class="comment">// 压缩后是否删除源文件</span></span><br><span class="line">      <span class="attr">disable</span>: <span class="literal">false</span>, <span class="comment">// 是否禁用该插件</span></span><br><span class="line">      <span class="attr">ext</span>: <span class="string">&#x27;.gz&#x27;</span>, <span class="comment">// 压缩文件的后缀名</span></span><br><span class="line">      <span class="attr">algorithm</span>: <span class="string">&#x27;gzip&#x27;</span> <span class="comment">// 压缩算法，可选值参考文档</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>

@@ -20,15 +20,15 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中 压缩方式使用 vite-plugin-compression 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高">
+  <meta name="description" content="vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Vite 性能优化">
 <meta property="og:url" content="http://example.com/2022/09/29/vite/index.html">
 <meta property="og:site_name" content="有个人走过1999">
-<meta property="og:description" content="vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中 压缩方式使用 vite-plugin-compression 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高">
+<meta property="og:description" content="vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-09-29T12:14:01.655Z">
-<meta property="article:modified_time" content="2022-09-29T13:30:09.619Z">
+<meta property="article:modified_time" content="2022-10-03T14:07:17.483Z">
 <meta property="article:author" content="Jacky Chueng">
 <meta property="article:tag" content="js">
 <meta property="article:tag" content="vite">
@@ -218,10 +218,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-09-29 20:14:01 / 修改时间：21:30:09" itemprop="dateCreated datePublished" datetime="2022-09-29T20:14:01+08:00">2022-09-29</time>
+              <time title="创建时间：2022-09-29 20:14:01" itemprop="dateCreated datePublished" datetime="2022-09-29T20:14:01+08:00">2022-09-29</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-10-03 22:07:17" itemprop="dateModified" datetime="2022-10-03T22:07:17+08:00">2022-10-03</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -233,6 +239,7 @@
             </span>
 
           
+            <div class="post-description">vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中</div>
 
         </div>
       </header>
@@ -243,8 +250,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中</p>
-<h2 id="压缩方式"><a href="#压缩方式" class="headerlink" title="压缩方式"></a>压缩方式</h2><p>使用 <a target="_blank" rel="noopener" href="https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md">vite-plugin-compression</a> 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高效率，同时服务端在收到客户端请求的时候，也可以选择这些已经上传好了的gz文件，返回给浏览器自行解压。</p>
+        <h2 id="压缩方式"><a href="#压缩方式" class="headerlink" title="压缩方式"></a>压缩方式</h2><p>使用 <a target="_blank" rel="noopener" href="https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md">vite-plugin-compression</a> 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高效率，同时服务端在收到客户端请求的时候，也可以选择这些已经上传好了的gz文件，返回给浏览器自行解压。</p>
 <h3 id="使用方式如下"><a href="#使用方式如下" class="headerlink" title="使用方式如下"></a>使用方式如下</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add vite-plugin-compression -D</span><br></pre></td></tr></table></figure>
 
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> viteCompression <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-compression&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">viteCompression</span>(&#123;</span><br><span class="line">      <span class="attr">verbose</span>: <span class="literal">true</span>, <span class="comment">// 是否在控制台输出压缩日志</span></span><br><span class="line">      <span class="title function_">filter</span>(<span class="params">file</span>) &#123; <span class="comment">// 筛选哪些需要压缩的文件</span></span><br><span class="line">        <span class="comment">// 忽略css文件</span></span><br><span class="line">        <span class="keyword">return</span> !file.<span class="title function_">endsWith</span>(<span class="string">&#x27;.css&#x27;</span>)</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">threshold</span>: <span class="number">50</span> * <span class="number">1024</span>, <span class="comment">// 压缩阈值，大于设定值需要压缩</span></span><br><span class="line">      <span class="attr">deleteOriginFile</span>: <span class="literal">false</span>, <span class="comment">// 压缩后是否删除源文件</span></span><br><span class="line">      <span class="attr">disable</span>: <span class="literal">false</span>, <span class="comment">// 是否禁用该插件</span></span><br><span class="line">      <span class="attr">ext</span>: <span class="string">&#x27;.gz&#x27;</span>, <span class="comment">// 压缩文件的后缀名</span></span><br><span class="line">      <span class="attr">algorithm</span>: <span class="string">&#x27;gzip&#x27;</span> <span class="comment">// 压缩算法，可选值参考文档</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
@@ -335,8 +341,8 @@
     <div class="post-nav">
       <div class="post-nav-item"></div>
       <div class="post-nav-item">
-    <a href="/2022/09/30/custom-cli/" rel="next" title="custom-cli">
-      custom-cli <i class="fa fa-chevron-right"></i>
+    <a href="/2022/09/30/custom-cli/" rel="next" title="自定义脚手架">
+      自定义脚手架 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -381,7 +387,6 @@
     <span class="toggle-line toggle-line-middle"></span>
     <span class="toggle-line toggle-line-last"></span>
   </div>
-
   <aside class="sidebar">
     <div class="sidebar-inner">
 
@@ -441,6 +446,7 @@
 
 
 
+        <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=189865&auto=1&height=66"></iframe>
       </div>
 
     </div>
