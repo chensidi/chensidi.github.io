@@ -1,6 +1,186 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>commit-lint-steps</title>
+    <url>/2022/10/01/commit-lint-steps/</url>
+    <content><![CDATA[<p>当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。</p>
+<h2 id="需要一个git辅助提交工具"><a href="#需要一个git辅助提交工具" class="headerlink" title="需要一个git辅助提交工具"></a>需要一个git辅助提交工具</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>很多人在使用git提交代码的时候，通常会使用命令行，例如 <code>git commit -m &#39;评论组件功能编码&#39;</code>，这样没有问题，甚至你直接使用ide自带的工具也能提交，但是其他人并不知道你这个描述，代表的是哪种提交类型，因为我们希望其他人在看到这条记录的时候，能够一眼就能看出这是哪类的 commit，所以社区内逐渐形成了多种 commit 格式规范，典型的就是<code>约定式提交</code>，或者 <code>conventionalcommits</code>，这是基于angular约定的一种规范，详情可参考<a href="https://www.conventionalcommits.org/en/v1.0.0/">约定式提交规范</a></p>
+<h3 id="提交范例"><a href="#提交范例" class="headerlink" title="提交范例"></a>提交范例</h3><p>在约定式提交规范里，有以下几种格式</p>
+<ul>
+<li><p>新功能开发</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git commit -m &#x27;feat: 回复功能的开发&#x27;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>bug修复</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git commit -m &#x27;fix(components): 评论组件嵌套问题修改&#x27;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>代码风格调整</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git commit -m &#x27;style: 代码统一缩进，函数全部改为箭头函数表达式&#x27;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>测试代码调整</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git commit -m &#x27;test: 测试案例调整&#x27;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>文档相关更改</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git commit -m &#x27;docs: 功能文档api部分编写&#x27;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>上面几种是比较常用的提交格式，通俗来说就是由三部分组成<br><code>git commit &lt;type&gt;(scope): your description</code></p>
+<ol>
+<li>类型（type），除上述案例中的类型外，build:、chore:、 ci、style:、refactor:、perf，也可以根据需要自定义</li>
+<li>影响范围，也叫scope，这个值是可选的，目的是告诉大家这次提交会波及哪些代码功能范围</li>
+<li>描述，本次提交的简洁描述，也就是平时大家最常写的内容</li>
+</ol>
+<p>除了上面这三个组成部分，其实还有一些部分，例如脚注，相关的issue，有无破坏性改变，它的完整结构应该是这样的</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">&lt;type&gt;[optional scope]: &lt;description&gt;</span><br><span class="line"></span><br><span class="line">[optional body]</span><br><span class="line"></span><br><span class="line">[optional footer(s)]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="辅助工具"><a href="#辅助工具" class="headerlink" title="辅助工具"></a>辅助工具</h3><p>由于提交一次代码，要做到上述的结构规范对于初学者来说，稍微困难，特别是类型很多时不一定能敲出正确的type，所以我们希望能有一款智能提示插件，能引导我们去完成提交结构的组装，社区里有一款插件正好能满足这个需求，那就是 <a href="https://www.npmjs.com/package/cz-customizable">cz-customizable</a></p>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add cz-customizable -D</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>在 package.json 里面，添加如下配置</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="attr">&quot;config&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;commitizen&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;node_modules/cz-customizable&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后在根目录添加 <code>.cz-config.js</code>，这个js就是为该插件做配置，你也可以重命名，具体参考官方文档，js示例内容如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="comment">// commit类型选择</span></span><br><span class="line">  <span class="attr">types</span>: [</span><br><span class="line">    &#123; <span class="attr">value</span>: <span class="string">&#x27;feat&#x27;</span>,   <span class="attr">name</span>: <span class="string">&#x27;feat:  新功能开发&#x27;</span> &#125;,</span><br><span class="line">    &#123; <span class="attr">value</span>: <span class="string">&#x27;bug&#x27;</span>,    <span class="attr">name</span>: <span class="string">&#x27;fix:   bug修复&#x27;</span> &#125;,</span><br><span class="line">    &#123; <span class="attr">value</span>: <span class="string">&#x27;test&#x27;</span>,   <span class="attr">name</span>: <span class="string">&#x27;test:  测试功能&#x27;</span> &#125;,</span><br><span class="line">    &#123; <span class="attr">value</span>: <span class="string">&#x27;style&#x27;</span>,  <span class="attr">name</span>: <span class="string">&#x27;style: 代码样式调整&#x27;</span> &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">allowCustomScopes</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">allowBreakingChanges</span>: [<span class="string">&#x27;feat&#x27;</span>, <span class="string">&#x27;fix&#x27;</span>],</span><br><span class="line">  <span class="attr">skipQuestions</span>: [<span class="string">&#x27;scope&#x27;</span>, <span class="string">&#x27;footer&#x27;</span>],</span><br><span class="line">  <span class="comment">// 命令行交互信息</span></span><br><span class="line">  <span class="attr">messages</span>: &#123;</span><br><span class="line">    <span class="attr">type</span>: <span class="string">&#x27;选择你的提交类型\n&#x27;</span>,</span><br><span class="line">    <span class="attr">scope</span>: <span class="string">&#x27;选择你的改变范围:\n&#x27;</span>,</span><br><span class="line">    <span class="comment">// used if allowCustomScopes is true</span></span><br><span class="line">    <span class="attr">customScope</span>: <span class="string">&#x27;填写改变范围:&#x27;</span>,</span><br><span class="line">    <span class="attr">subject</span>: <span class="string">&#x27;填写简洁的描述信息:\n&#x27;</span>,</span><br><span class="line">    <span class="attr">body</span>: <span class="string">&#x27;填写详细的描述，可以使用 | 进行换行:\n&#x27;</span>,</span><br><span class="line">    <span class="attr">breaking</span>: <span class="string">&#x27;列举有破坏性的改变:\n&#x27;</span>,</span><br><span class="line">    <span class="attr">footer</span>: <span class="string">&#x27;列举关闭的issue. E.g.: #31, #34:\n&#x27;</span>,</span><br><span class="line">    <span class="attr">confirmCommit</span>: <span class="string">&#x27;你确定要提交本次更改?&#x27;</span>,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样做了之后，我们尝试改变一些业务代码，然后我们尝试提交，这里就可以使用 <code>git cz</code>命令行了</p>
+<blockquote>
+<p>注意，git cz不是git自带的命令，而是安装并配置了插件之后，对git命令增强的</p>
+</blockquote>
+<p>然后我们发现，出现了交互式命令行<br><img src="/../imgs/1.jpg" alt="img"><br>然后我们按照指示步骤往下走，最终就会得到完整的提交信息结构<br><img src="/../imgs/2.jpg" alt="img"><br>这样，借助这款工具就能轻易地完成一次精准的格式提交</p>
+<p>当然，上面的案例只是演示，具体需要哪种风格的格式，可以自行配置，官网还有很多可以自定义的选项。</p>
+<h2 id="校验提交格式"><a href="#校验提交格式" class="headerlink" title="校验提交格式"></a>校验提交格式</h2><p>上面的内容介绍了如何让我们能够通过工具完成一次精确的提交，但是并不阻碍我们可以直接使用 <code>git commit</code>提交，记住<code>git cz</code> 只是辅助你完成格式构建，但并不是强制的，所以当你使用 <code>git commit</code> 命令的时候，随意提交内容，目前来看还是能够顺利通过的，所以需要对提交来的格式做校验，拦截不符合要求的 commit log</p>
+<h3 id="commitlint介绍"><a href="#commitlint介绍" class="headerlink" title="commitlint介绍"></a>commitlint介绍</h3><p>commitlint是用作校验提交格式的，官网是<a href="https://commitlint.js.org/#/">commitlint</a><br>我们每一次在提交之后，都应该经过commitlint的校验后才能通过，接下来介绍使用方法</p>
+<h4 id="安装commitLint"><a href="#安装commitLint" class="headerlink" title="安装commitLint"></a>安装commitLint</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">注意这里是两个依赖</span></span><br><span class="line">yarn add @commitlint/cli @commitlint/config-conventional</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置config文件"><a href="#配置config文件" class="headerlink" title="配置config文件"></a>配置config文件</h4><p>要想使用commitlint，需要在根目录下新建 <code>commitlint.config.js</code>，示例内容如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="attr">extends</span>: [<span class="string">&#x27;@commitlint/config-conventional&#x27;</span>], <span class="comment">// 配置继承自约定式config</span></span><br><span class="line">  <span class="attr">rules</span>: &#123; <span class="comment">// 规则</span></span><br><span class="line">    <span class="string">&#x27;type-enum&#x27;</span>: [ <span class="comment">// 对应提交类型</span></span><br><span class="line">      <span class="number">2</span>, <span class="comment">// 可选0,1,2分别代表禁用，警告，报错</span></span><br><span class="line">      <span class="string">&#x27;always&#x27;</span>, <span class="comment">// never|always, 禁用，启用</span></span><br><span class="line">      [</span><br><span class="line">        <span class="string">&#x27;feat&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;fix&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;test&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;style&#x27;</span>,</span><br><span class="line">      ]</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 更多自定义配置参考官网</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="配置husky"><a href="#配置husky" class="headerlink" title="配置husky"></a>配置husky</h3><p>现在我们还暂时不能完成 commitlint，因为对提交的校验，是发生在git commit的hook前，只有这个钩子通过了，才能真正通过commit，所以husky就是做这些事情的，通俗说，husky就是为触发git各种hook，执行对应的脚本程序</p>
+<h4 id="安装husky依赖"><a href="#安装husky依赖" class="headerlink" title="安装husky依赖"></a>安装husky依赖</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add husky -D</span><br></pre></td></tr></table></figure>
+
+<h4 id="初始化husky"><a href="#初始化husky" class="headerlink" title="初始化husky"></a>初始化husky</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npx husky install</span><br></pre></td></tr></table></figure>
+
+<p>或者你希望在 yarn install安装依赖之后自动触发，可以在 package.json 文件中的 scripts 字段下添加</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="attr">&quot;scripts&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;prepare&quot;</span><span class="punctuation">:</span> <span class="string">&quot;husky install&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>在husky install执行之后，会在根目录下生成 <code>.husky</code> 文件，然后我们可以添加一个对commit-msg的钩子处理脚本命令</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npx husky add .husky/commit-msg  &quot;npx --no -- commitlint --edit $&#123;1&#125;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>这条命令会在 <code>.husky</code> 目录下生成 <code>commit-msg</code>文件</p>
+<p>这就会在git commit时，触发其对应钩子，使用commitlint插件对本次commit信息进行校验</p>
+<h3 id="尝试使用"><a href="#尝试使用" class="headerlink" title="尝试使用"></a>尝试使用</h3><p>现在我们就能够对提交信息进行校验了，尝试提交一个功能。<br><img src="/../imgs/3.jpg" alt="img"></p>
+<p>我们发现，本次提交并没有通过，因为我们的 <code>commitling.config.js</code> 中配置了，并且提交类型是必须的，所以我们需要改写为正确的格式 <code>git commit -m &#39;feat(components): 开发评论组件&#39;</code>，然后校验通过</p>
+<p>我们也可以结合之前的 <code>git cz</code> 命令，完成一次严格的commit操作</p>
+<blockquote>
+<p>再次说明，示例配置的只是为了演示，具体的情况视各位的项目为准，可以对 <code>.cz-config.js</code> 和 <code>commitlint.config.js</code> 内容自行定制</p>
+</blockquote>
+<h2 id="添加eslint"><a href="#添加eslint" class="headerlink" title="添加eslint"></a>添加eslint</h2><p>eslint是js&#x2F;ts 的校验工具，具体使用方法请参考官网，这里只介绍如何配置在git commit流程中，让每次commit之前都完成 eslint 的校验，保证代码规范。下面介绍步骤</p>
+<h3 id="eslint配置"><a href="#eslint配置" class="headerlink" title="eslint配置"></a>eslint配置</h3><h4 id="安装eslint"><a href="#安装eslint" class="headerlink" title="安装eslint"></a>安装eslint</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add eslint -D</span><br></pre></td></tr></table></figure>
+
+<h4 id="添加scripts命令"><a href="#添加scripts命令" class="headerlink" title="添加scripts命令"></a>添加scripts命令</h4><figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;scripts&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;eslint:init&quot;</span><span class="punctuation">:</span> <span class="string">&quot;npx eslint --init&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;eslint:lint&quot;</span><span class="punctuation">:</span> <span class="string">&quot;eslint --ext .js,.ts,.tsx,.jsx,.vue src/&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;eslint:fix&quot;</span><span class="punctuation">:</span> <span class="string">&quot;eslint --fix --ext .js,.ts,.tsx,.jsx,.vue src/&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后分别执行 <code>yarn eslint:init</code>，这是 eslint 的初始化命令，eslint 会引导你渐进式地使用个性化的一套流程，然后会生成<br><code>.eslintrc.js</code> 文件，也就是校验规则</p>
+<p>执行 <code>yarn eslint:lint</code> 则会完成校验工作，执行 <code>yarn eslint:fix</code> 这个则是根据你的配置完成修复</p>
+<h3 id="添加pre-commit钩子"><a href="#添加pre-commit钩子" class="headerlink" title="添加pre-commit钩子"></a>添加pre-commit钩子</h3><p>如果没有 pro-commit 钩子，那么无法在commit 的时候自动校验，只能手动执行lint命令校验，所以需要一个钩子去触发校验</p>
+<p>执行以下命令</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npx husky add ./husky pre-commit &quot;yarn eslint:lint&quot;</span><br></pre></td></tr></table></figure>
+
+<p>就会生成  <code>pre-commit</code> 文件，也就是提交前的钩子，执行的脚本命令就是 <code>yarn eslint:lint</code>.</p>
+<p>这样我们在每次提交的时候，就会先执行 eslint 校验，之后再进入格式校验</p>
+<h3 id="添加lintstaged"><a href="#添加lintstaged" class="headerlink" title="添加lintstaged"></a>添加lintstaged</h3>]]></content>
+      <categories>
+        <category>前端规范</category>
+      </categories>
+      <tags>
+        <tag>node</tag>
+        <tag>git</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>custom-cli</title>
+    <url>/2022/09/30/custom-cli/</url>
+    <content><![CDATA[<p>平时大家经常用的命令行工具，如 <code>cra</code>, <code>vite</code>, <code>npm</code> 等，都是在命令窗口进行操作，那么不少同学会疑问，这些所谓的 <code>cli</code>是如何实现的，那么这篇文章将介绍如何构建一个自己的命令行工具，目标如下</p>
+<ol>
+<li>搭建好自定义cli，能够做出一系列命令操作</li>
+<li>用此cli，给项目添加git的commit规范</li>
+<li>给项目添加eslint</li>
+</ol>
+<h2 id="自定义cli"><a href="#自定义cli" class="headerlink" title="自定义cli"></a>自定义cli</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>先使用npm 或者 yarn，完成package.json 的创建，命令如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn init -y </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这是默认配置，你也可以不用-y，然后按照它的提示一步一步往下走</span></span><br></pre></td></tr></table></figure>
+
+<p>然后添加命令行入口文件，我是在根目录下建立 <code>cli</code> 文件夹，并添加 <code>index.js</code>，可以先随便写一些内容如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;cli start&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这时候我们用node去执行，看看是否有输出</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">node ./cli/index</span><br></pre></td></tr></table></figure>
+
+<p>可以看到确实有输出，但是如何用命令行形式将其输出？例如</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">希望这样的命令行，就能将index.js内容输出</span></span><br><span class="line">jacky</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是生成自定义的cli，很简单其实，往下看</p>
+<h3 id="cli生成"><a href="#cli生成" class="headerlink" title="cli生成"></a>cli生成</h3><p>找到package.json，添加bin字段，并对应配置，如下</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;bin&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jacky&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./cli/index.js&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>意思就是，定义一个cli命令，并且指定其入口执行js文件</p>
+<p>接下来就是，将这个命令链接到全局，我们能够在任何目录下通过这个命令来执行 <code>cli/index.js</code>中的代码<br>操作如下，在项目根目录，执行</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm link</span><br></pre></td></tr></table></figure>
+
+<p>这个时候我们可以查看是否cli命令行已经生成了</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm list -g</span><br></pre></td></tr></table></figure>
+
+<p>这是我们可以尝试在命令行里执行 jakcy，看看有没有反应，结果肯定是报错，因为我们的入口文件，需要指定在node环境下运行，就需要在该文件头部定义</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">#!usr/bin/env node</span><br></pre></td></tr></table></figure>
+
+<p>这样就能够让代码正确运行在node环境，重新执行jacky命令，终端就会输出index.js 内容</p>
+<blockquote>
+<p>需要注意，如果添加头部配置后，重新执行命令依然报错，可以先解除命令，在根目录执行 <code>npm unlink jacky-cli</code>,然后全局卸载掉 <code>npm uninstall jacky-cli</code>, 然后重新 <code>npm link</code>, 这样重新走一遍流程就能解决了</p>
+</blockquote>
+<h3 id="命令行参数"><a href="#命令行参数" class="headerlink" title="命令行参数"></a>命令行参数</h3><p>上面我们介绍了 cli 的最基本配置过程，那么用户在使用 cli 的时候，肯定会有参数支持，例如 vite 支持 –template，rollup 支持 –output，这些就是参数，也就是让命令行走不同的逻辑分支，完成不同功能。</p>
+<h4 id="安装commander依赖"><a href="#安装commander依赖" class="headerlink" title="安装commander依赖"></a>安装commander依赖</h4><p><code>commander</code> 是一款解决命令行问题的npm包，大部分脚手架工具都会安装这个包，安装它的目的就是帮助我们去处理输入的命令参数。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i commander</span><br></pre></td></tr></table></figure>
+
+<p>然后我们可以在 index.js 中添加内容</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要从包里导出program对象</span></span><br><span class="line"><span class="keyword">const</span> &#123; program &#125; = <span class="built_in">require</span>(<span class="string">&quot;commander&quot;</span>);</span><br><span class="line"></span><br><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;init&#x27;</span>) <span class="comment">// 配置命令 =&gt; jacky init</span></span><br><span class="line">  .<span class="title function_">option</span>(<span class="string">&#x27;--type &lt;char&gt;&#x27;</span>, <span class="string">&#x27;input your type&#x27;</span>, <span class="string">&#x27;vue&#x27;</span>) <span class="comment">// 配置参数 =&gt; jacky init --type react</span></span><br><span class="line">  .<span class="title function_">action</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res)</span><br><span class="line">    <span class="comment">// &#123; type: &#x27;react&#x27; &#125;</span></span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解析输入的命令参数</span></span><br><span class="line">program.<span class="title function_">parse</span>(process.<span class="property">argv</span>)</span><br></pre></td></tr></table></figure>
+
+<p>commander 包提供了一个 program 的对象，方便我们快速地对命令行内容操作和配置，当然它内部还提供了更强大的功能，有兴趣可以移步官网<br>这里重点介绍program对象</p>
+<ul>
+<li>command方法，定义命令名称，配置后会生成如，<code>jacky init</code>的命令</li>
+<li>option方法，定义命令参数，是针对上述命令完成进一步配置的，可设置多个option，可以接受三个参数<ul>
+<li>参数1，参数名称和类型，必填</li>
+<li>参数2，参数类型说明，可选</li>
+<li>参数3，参数默认值，可选</li>
+</ul>
+</li>
+<li>action方法，在输入完命令后的回调函数，接收的参数就是输入的命令内容组成的对象</li>
+</ul>
+<h4 id="安装inquirer依赖"><a href="#安装inquirer依赖" class="headerlink" title="安装inquirer依赖"></a>安装inquirer依赖</h4><p>inquirer是提供给用户在命令行交互的包，例如询问，输入，选择等多种交互方式</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i inquirer</span><br></pre></td></tr></table></figure>
+
+<p>然后我们在index.js 中再添加一条命令，并且加入交互操作</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  .<span class="title function_">action</span>(<span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="title function_">prompt</span>([</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="string">&#x27;input&#x27;</span>, <span class="comment">// 交互类型，输入形式</span></span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;name&#x27;</span>, <span class="comment">// 字段名称</span></span><br><span class="line">        <span class="attr">default</span>: <span class="string">&#x27;jacky cheung&#x27;</span>, <span class="comment">// 默认值</span></span><br><span class="line">        <span class="attr">message</span>: <span class="string">&#x27;please input your name&#x27;</span> <span class="comment">// 交互信息</span></span><br><span class="line">      &#125;</span><br><span class="line">    ])</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;res: &#x27;</span>, res)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>然后我们敲下 <code>jacky create</code>, 终端会出现提示，然后我们输入一些内容，看看会是什么现象</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PS D:\JackyProgram\jacky-cli&gt; jacky create    </span><br><span class="line">? please input your name jacky cheung</span><br><span class="line">res:  &#123; name: &#x27;jacky cheung&#x27; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>打印的结果就是，将prompt配置的字段整合为一个对象，当然这里介绍的都是基本操作，更多的api请参考官网，这里是做铺垫为了后面的项目</p>
+<p>propmt接受的是一个数组，也就是询问的条数</p>
+<ul>
+<li>type，交互类型，如 input, confirm, checkbox, list, number, password等</li>
+<li>name，字段名称，也就是最终prompt的返回的结果，由这些字段组装而成</li>
+<li>default，字段默认值，如果直接按回车，就以该值作为输入值</li>
+<li>message，交互提示说明文字，在交互时会给予提示</li>
+</ul>
+<p>prompt本身返回一个promise，所以你可以使用 <code>async/await</code>，也可以使用 <code>.then</code> 形式做后续操作。</p>
+<h2 id="实现Git规范"><a href="#实现Git规范" class="headerlink" title="实现Git规范"></a>实现Git规范</h2><p>前面的内容已经介绍了如何完成简单的cli，并且能够处理命令和交互，这一节我们讨论如何利用cli实现对git方面的提交约束</p>
+<h3 id="jacky-git-命令"><a href="#jacky-git-命令" class="headerlink" title="jacky git 命令"></a>jacky git 命令</h3><p>我们期望有这样一个命令，<code>jacky git</code>，然后通过参数，完成对git规范的配置，配置git规范的流程见另一篇文章</p>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>node.js</tag>
+        <tag>cli</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Vite 性能优化</title>
     <url>/2022/09/29/vite/</url>
     <content><![CDATA[<p>vite是目前最流行的构建工具之一，尤其是搭配给 vue3.x 开发，能够给开发者提供相当丝滑的coding体验，并且相比 webpack，其配置相对较少，那么是否意味着我们不需要对它进行优化呢，肯定是需要的，下面就以此介绍有哪些手段可以应用到开发中</p>

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。 需要一个git辅助提交工具前言">
+<meta property="og:type" content="article">
+<meta property="og:title" content="commit-lint-steps">
+<meta property="og:url" content="http://example.com/2022/10/01/commit-lint-steps/index.html">
+<meta property="og:site_name" content="有个人走过1999">
+<meta property="og:description" content="当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。 需要一个git辅助提交工具前言">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/imgs/1.jpg">
+<meta property="og:image" content="http://example.com/imgs/2.jpg">
+<meta property="og:image" content="http://example.com/imgs/3.jpg">
+<meta property="article:published_time" content="2022-10-01T04:40:45.000Z">
+<meta property="article:modified_time" content="2022-10-03T13:37:35.718Z">
+<meta property="article:author" content="Jacky Chueng">
+<meta property="article:tag" content="node">
+<meta property="article:tag" content="git">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/imgs/1.jpg">
+
+<link rel="canonical" href="http://example.com/2022/10/01/commit-lint-steps/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>commit-lint-steps | 有个人走过1999</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">有个人走过1999</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">一生热爱 回头太难</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/10/01/commit-lint-steps/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/imgs/jc.jpg">
+      <meta itemprop="name" content="Jacky Chueng">
+      <meta itemprop="description" content="四大爱好: 代码,学友,利物浦,美食">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有个人走过1999">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          commit-lint-steps
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-10-01 12:40:45" itemprop="dateCreated datePublished" datetime="2022-10-01T12:40:45+08:00">2022-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-10-03 21:37:35" itemprop="dateModified" datetime="2022-10-03T21:37:35+08:00">2022-10-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%89%8D%E7%AB%AF%E8%A7%84%E8%8C%83/" itemprop="url" rel="index"><span itemprop="name">前端规范</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>当一个项目是由多人协作，并且内部结构相对庞大的情况，指定git规范，是毋庸置疑的，因为它能够在约束提交，代码风格方面起到很大作用，想象一下，如果一个项目在很多人，甚至几代开发者的迭代下，没有一套定制规范，那么写出来的代码肯定是五花八门的，所以这篇文章会逐步带你完成一个项目的git规范定制。</p>
+<h2 id="需要一个git辅助提交工具"><a href="#需要一个git辅助提交工具" class="headerlink" title="需要一个git辅助提交工具"></a>需要一个git辅助提交工具</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>很多人在使用git提交代码的时候，通常会使用命令行，例如 <code>git commit -m &#39;评论组件功能编码&#39;</code>，这样没有问题，甚至你直接使用ide自带的工具也能提交，但是其他人并不知道你这个描述，代表的是哪种提交类型，因为我们希望其他人在看到这条记录的时候，能够一眼就能看出这是哪类的 commit，所以社区内逐渐形成了多种 commit 格式规范，典型的就是<code>约定式提交</code>，或者 <code>conventionalcommits</code>，这是基于angular约定的一种规范，详情可参考<a target="_blank" rel="noopener" href="https://www.conventionalcommits.org/en/v1.0.0/">约定式提交规范</a></p>
+<h3 id="提交范例"><a href="#提交范例" class="headerlink" title="提交范例"></a>提交范例</h3><p>在约定式提交规范里，有以下几种格式</p>
+<ul>
+<li><p>新功能开发</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m &#x27;feat: 回复功能的开发&#x27;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>bug修复</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m &#x27;fix(components): 评论组件嵌套问题修改&#x27;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>代码风格调整</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m &#x27;style: 代码统一缩进，函数全部改为箭头函数表达式&#x27;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>测试代码调整</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m &#x27;test: 测试案例调整&#x27;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>文档相关更改</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m &#x27;docs: 功能文档api部分编写&#x27;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>上面几种是比较常用的提交格式，通俗来说就是由三部分组成<br><code>git commit &lt;type&gt;(scope): your description</code></p>
+<ol>
+<li>类型（type），除上述案例中的类型外，build:、chore:、 ci、style:、refactor:、perf，也可以根据需要自定义</li>
+<li>影响范围，也叫scope，这个值是可选的，目的是告诉大家这次提交会波及哪些代码功能范围</li>
+<li>描述，本次提交的简洁描述，也就是平时大家最常写的内容</li>
+</ol>
+<p>除了上面这三个组成部分，其实还有一些部分，例如脚注，相关的issue，有无破坏性改变，它的完整结构应该是这样的</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;type&gt;[optional scope]: &lt;description&gt;</span><br><span class="line"></span><br><span class="line">[optional body]</span><br><span class="line"></span><br><span class="line">[optional footer(s)]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="辅助工具"><a href="#辅助工具" class="headerlink" title="辅助工具"></a>辅助工具</h3><p>由于提交一次代码，要做到上述的结构规范对于初学者来说，稍微困难，特别是类型很多时不一定能敲出正确的type，所以我们希望能有一款智能提示插件，能引导我们去完成提交结构的组装，社区里有一款插件正好能满足这个需求，那就是 <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/cz-customizable">cz-customizable</a></p>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add cz-customizable -D</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>在 package.json 里面，添加如下配置</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;config&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;commitizen&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;node_modules/cz-customizable&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后在根目录添加 <code>.cz-config.js</code>，这个js就是为该插件做配置，你也可以重命名，具体参考官方文档，js示例内容如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="comment">// commit类型选择</span></span><br><span class="line">  <span class="attr">types</span>: [</span><br><span class="line">    &#123; <span class="attr">value</span>: <span class="string">&#x27;feat&#x27;</span>,   <span class="attr">name</span>: <span class="string">&#x27;feat:  新功能开发&#x27;</span> &#125;,</span><br><span class="line">    &#123; <span class="attr">value</span>: <span class="string">&#x27;bug&#x27;</span>,    <span class="attr">name</span>: <span class="string">&#x27;fix:   bug修复&#x27;</span> &#125;,</span><br><span class="line">    &#123; <span class="attr">value</span>: <span class="string">&#x27;test&#x27;</span>,   <span class="attr">name</span>: <span class="string">&#x27;test:  测试功能&#x27;</span> &#125;,</span><br><span class="line">    &#123; <span class="attr">value</span>: <span class="string">&#x27;style&#x27;</span>,  <span class="attr">name</span>: <span class="string">&#x27;style: 代码样式调整&#x27;</span> &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">allowCustomScopes</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">allowBreakingChanges</span>: [<span class="string">&#x27;feat&#x27;</span>, <span class="string">&#x27;fix&#x27;</span>],</span><br><span class="line">  <span class="attr">skipQuestions</span>: [<span class="string">&#x27;scope&#x27;</span>, <span class="string">&#x27;footer&#x27;</span>],</span><br><span class="line">  <span class="comment">// 命令行交互信息</span></span><br><span class="line">  <span class="attr">messages</span>: &#123;</span><br><span class="line">    <span class="attr">type</span>: <span class="string">&#x27;选择你的提交类型\n&#x27;</span>,</span><br><span class="line">    <span class="attr">scope</span>: <span class="string">&#x27;选择你的改变范围:\n&#x27;</span>,</span><br><span class="line">    <span class="comment">// used if allowCustomScopes is true</span></span><br><span class="line">    <span class="attr">customScope</span>: <span class="string">&#x27;填写改变范围:&#x27;</span>,</span><br><span class="line">    <span class="attr">subject</span>: <span class="string">&#x27;填写简洁的描述信息:\n&#x27;</span>,</span><br><span class="line">    <span class="attr">body</span>: <span class="string">&#x27;填写详细的描述，可以使用 | 进行换行:\n&#x27;</span>,</span><br><span class="line">    <span class="attr">breaking</span>: <span class="string">&#x27;列举有破坏性的改变:\n&#x27;</span>,</span><br><span class="line">    <span class="attr">footer</span>: <span class="string">&#x27;列举关闭的issue. E.g.: #31, #34:\n&#x27;</span>,</span><br><span class="line">    <span class="attr">confirmCommit</span>: <span class="string">&#x27;你确定要提交本次更改?&#x27;</span>,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样做了之后，我们尝试改变一些业务代码，然后我们尝试提交，这里就可以使用 <code>git cz</code>命令行了</p>
+<blockquote>
+<p>注意，git cz不是git自带的命令，而是安装并配置了插件之后，对git命令增强的</p>
+</blockquote>
+<p>然后我们发现，出现了交互式命令行<br><img src="/../imgs/1.jpg" alt="img"><br>然后我们按照指示步骤往下走，最终就会得到完整的提交信息结构<br><img src="/../imgs/2.jpg" alt="img"><br>这样，借助这款工具就能轻易地完成一次精准的格式提交</p>
+<p>当然，上面的案例只是演示，具体需要哪种风格的格式，可以自行配置，官网还有很多可以自定义的选项。</p>
+<h2 id="校验提交格式"><a href="#校验提交格式" class="headerlink" title="校验提交格式"></a>校验提交格式</h2><p>上面的内容介绍了如何让我们能够通过工具完成一次精确的提交，但是并不阻碍我们可以直接使用 <code>git commit</code>提交，记住<code>git cz</code> 只是辅助你完成格式构建，但并不是强制的，所以当你使用 <code>git commit</code> 命令的时候，随意提交内容，目前来看还是能够顺利通过的，所以需要对提交来的格式做校验，拦截不符合要求的 commit log</p>
+<h3 id="commitlint介绍"><a href="#commitlint介绍" class="headerlink" title="commitlint介绍"></a>commitlint介绍</h3><p>commitlint是用作校验提交格式的，官网是<a target="_blank" rel="noopener" href="https://commitlint.js.org/#/">commitlint</a><br>我们每一次在提交之后，都应该经过commitlint的校验后才能通过，接下来介绍使用方法</p>
+<h4 id="安装commitLint"><a href="#安装commitLint" class="headerlink" title="安装commitLint"></a>安装commitLint</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">注意这里是两个依赖</span></span><br><span class="line">yarn add @commitlint/cli @commitlint/config-conventional</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置config文件"><a href="#配置config文件" class="headerlink" title="配置config文件"></a>配置config文件</h4><p>要想使用commitlint，需要在根目录下新建 <code>commitlint.config.js</code>，示例内容如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="attr">extends</span>: [<span class="string">&#x27;@commitlint/config-conventional&#x27;</span>], <span class="comment">// 配置继承自约定式config</span></span><br><span class="line">  <span class="attr">rules</span>: &#123; <span class="comment">// 规则</span></span><br><span class="line">    <span class="string">&#x27;type-enum&#x27;</span>: [ <span class="comment">// 对应提交类型</span></span><br><span class="line">      <span class="number">2</span>, <span class="comment">// 可选0,1,2分别代表禁用，警告，报错</span></span><br><span class="line">      <span class="string">&#x27;always&#x27;</span>, <span class="comment">// never|always, 禁用，启用</span></span><br><span class="line">      [</span><br><span class="line">        <span class="string">&#x27;feat&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;fix&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;test&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;style&#x27;</span>,</span><br><span class="line">      ]</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 更多自定义配置参考官网</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="配置husky"><a href="#配置husky" class="headerlink" title="配置husky"></a>配置husky</h3><p>现在我们还暂时不能完成 commitlint，因为对提交的校验，是发生在git commit的hook前，只有这个钩子通过了，才能真正通过commit，所以husky就是做这些事情的，通俗说，husky就是为触发git各种hook，执行对应的脚本程序</p>
+<h4 id="安装husky依赖"><a href="#安装husky依赖" class="headerlink" title="安装husky依赖"></a>安装husky依赖</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add husky -D</span><br></pre></td></tr></table></figure>
+
+<h4 id="初始化husky"><a href="#初始化husky" class="headerlink" title="初始化husky"></a>初始化husky</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx husky install</span><br></pre></td></tr></table></figure>
+
+<p>或者你希望在 yarn install安装依赖之后自动触发，可以在 package.json 文件中的 scripts 字段下添加</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;scripts&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;prepare&quot;</span><span class="punctuation">:</span> <span class="string">&quot;husky install&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>在husky install执行之后，会在根目录下生成 <code>.husky</code> 文件，然后我们可以添加一个对commit-msg的钩子处理脚本命令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx husky add .husky/commit-msg  &quot;npx --no -- commitlint --edit $&#123;1&#125;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>这条命令会在 <code>.husky</code> 目录下生成 <code>commit-msg</code>文件</p>
+<p>这就会在git commit时，触发其对应钩子，使用commitlint插件对本次commit信息进行校验</p>
+<h3 id="尝试使用"><a href="#尝试使用" class="headerlink" title="尝试使用"></a>尝试使用</h3><p>现在我们就能够对提交信息进行校验了，尝试提交一个功能。<br><img src="/../imgs/3.jpg" alt="img"></p>
+<p>我们发现，本次提交并没有通过，因为我们的 <code>commitling.config.js</code> 中配置了，并且提交类型是必须的，所以我们需要改写为正确的格式 <code>git commit -m &#39;feat(components): 开发评论组件&#39;</code>，然后校验通过</p>
+<p>我们也可以结合之前的 <code>git cz</code> 命令，完成一次严格的commit操作</p>
+<blockquote>
+<p>再次说明，示例配置的只是为了演示，具体的情况视各位的项目为准，可以对 <code>.cz-config.js</code> 和 <code>commitlint.config.js</code> 内容自行定制</p>
+</blockquote>
+<h2 id="添加eslint"><a href="#添加eslint" class="headerlink" title="添加eslint"></a>添加eslint</h2><p>eslint是js&#x2F;ts 的校验工具，具体使用方法请参考官网，这里只介绍如何配置在git commit流程中，让每次commit之前都完成 eslint 的校验，保证代码规范。下面介绍步骤</p>
+<h3 id="eslint配置"><a href="#eslint配置" class="headerlink" title="eslint配置"></a>eslint配置</h3><h4 id="安装eslint"><a href="#安装eslint" class="headerlink" title="安装eslint"></a>安装eslint</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add eslint -D</span><br></pre></td></tr></table></figure>
+
+<h4 id="添加scripts命令"><a href="#添加scripts命令" class="headerlink" title="添加scripts命令"></a>添加scripts命令</h4><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;scripts&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;eslint:init&quot;</span><span class="punctuation">:</span> <span class="string">&quot;npx eslint --init&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;eslint:lint&quot;</span><span class="punctuation">:</span> <span class="string">&quot;eslint --ext .js,.ts,.tsx,.jsx,.vue src/&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;eslint:fix&quot;</span><span class="punctuation">:</span> <span class="string">&quot;eslint --fix --ext .js,.ts,.tsx,.jsx,.vue src/&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后分别执行 <code>yarn eslint:init</code>，这是 eslint 的初始化命令，eslint 会引导你渐进式地使用个性化的一套流程，然后会生成<br><code>.eslintrc.js</code> 文件，也就是校验规则</p>
+<p>执行 <code>yarn eslint:lint</code> 则会完成校验工作，执行 <code>yarn eslint:fix</code> 这个则是根据你的配置完成修复</p>
+<h3 id="添加pre-commit钩子"><a href="#添加pre-commit钩子" class="headerlink" title="添加pre-commit钩子"></a>添加pre-commit钩子</h3><p>如果没有 pro-commit 钩子，那么无法在commit 的时候自动校验，只能手动执行lint命令校验，所以需要一个钩子去触发校验</p>
+<p>执行以下命令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx husky add ./husky pre-commit &quot;yarn eslint:lint&quot;</span><br></pre></td></tr></table></figure>
+
+<p>就会生成  <code>pre-commit</code> 文件，也就是提交前的钩子，执行的脚本命令就是 <code>yarn eslint:lint</code>.</p>
+<p>这样我们在每次提交的时候，就会先执行 eslint 校验，之后再进入格式校验</p>
+<h3 id="添加lintstaged"><a href="#添加lintstaged" class="headerlink" title="添加lintstaged"></a>添加lintstaged</h3>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/node/" rel="tag"># node</a>
+              <a href="/tags/git/" rel="tag"># git</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/09/30/custom-cli/" rel="prev" title="custom-cli">
+      <i class="fa fa-chevron-left"></i> custom-cli
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9C%80%E8%A6%81%E4%B8%80%E4%B8%AAgit%E8%BE%85%E5%8A%A9%E6%8F%90%E4%BA%A4%E5%B7%A5%E5%85%B7"><span class="nav-number">1.</span> <span class="nav-text">需要一个git辅助提交工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E8%8C%83%E4%BE%8B"><span class="nav-number">1.2.</span> <span class="nav-text">提交范例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%85%E5%8A%A9%E5%B7%A5%E5%85%B7"><span class="nav-number">1.3.</span> <span class="nav-text">辅助工具</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">1.3.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8"><span class="nav-number">1.3.2.</span> <span class="nav-text">使用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%A1%E9%AA%8C%E6%8F%90%E4%BA%A4%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">校验提交格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#commitlint%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.1.</span> <span class="nav-text">commitlint介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85commitLint"><span class="nav-number">2.1.1.</span> <span class="nav-text">安装commitLint</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEconfig%E6%96%87%E4%BB%B6"><span class="nav-number">2.1.2.</span> <span class="nav-text">配置config文件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEhusky"><span class="nav-number">2.2.</span> <span class="nav-text">配置husky</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85husky%E4%BE%9D%E8%B5%96"><span class="nav-number">2.2.1.</span> <span class="nav-text">安装husky依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96husky"><span class="nav-number">2.2.2.</span> <span class="nav-text">初始化husky</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%9D%E8%AF%95%E4%BD%BF%E7%94%A8"><span class="nav-number">2.3.</span> <span class="nav-text">尝试使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0eslint"><span class="nav-number">3.</span> <span class="nav-text">添加eslint</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#eslint%E9%85%8D%E7%BD%AE"><span class="nav-number">3.1.</span> <span class="nav-text">eslint配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85eslint"><span class="nav-number">3.1.1.</span> <span class="nav-text">安装eslint</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0scripts%E5%91%BD%E4%BB%A4"><span class="nav-number">3.1.2.</span> <span class="nav-text">添加scripts命令</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0pre-commit%E9%92%A9%E5%AD%90"><span class="nav-number">3.2.</span> <span class="nav-text">添加pre-commit钩子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0lintstaged"><span class="nav-number">3.3.</span> <span class="nav-text">添加lintstaged</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jacky Chueng"
+      src="/imgs/jc.jpg">
+  <p class="site-author-name" itemprop="name">Jacky Chueng</p>
+  <div class="site-description" itemprop="description">四大爱好: 代码,学友,利物浦,美食</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chensidi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chensidi" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/chensidi" title="掘金 → https:&#x2F;&#x2F;github.com&#x2F;chensidi" rel="noopener" target="_blank"><i class="fab fa fa-fw"></i>掘金</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jacky Chueng</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
