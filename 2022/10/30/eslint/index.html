@@ -20,21 +20,20 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="本节内容是对ts中 declare 和 .d.ts文件书写方面的讨论，在实际开发过程中多少都会遇到这样的问题，比如js文件中已经有了某个方法，但ts中却提示找不到，或者干脆报错找不到某某模块；或者我们在为window拓展某些属性或方法时，ts提示错误信息等等...">
+  <meta name="description" content="在现代团队开发中，不论是前端还是后端，都应该有一套适合团队开发的规范，而前端领域，eslint最为规范的标杆，它的内部规范是绝大数团队用来约束开发人员的代码质量的，这篇文章选取了业界大厂规范文档中推荐的eslint规则">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ts声明文件">
-<meta property="og:url" content="http://example.com/2022/10/16/ts-declare/index.html">
+<meta property="og:title" content="eslint常用推荐配置项">
+<meta property="og:url" content="http://example.com/2022/10/30/eslint/index.html">
 <meta property="og:site_name" content="有个人走过1999">
-<meta property="og:description" content="本节内容是对ts中 declare 和 .d.ts文件书写方面的讨论，在实际开发过程中多少都会遇到这样的问题，比如js文件中已经有了某个方法，但ts中却提示找不到，或者干脆报错找不到某某模块；或者我们在为window拓展某些属性或方法时，ts提示错误信息等等...">
+<meta property="og:description" content="在现代团队开发中，不论是前端还是后端，都应该有一套适合团队开发的规范，而前端领域，eslint最为规范的标杆，它的内部规范是绝大数团队用来约束开发人员的代码质量的，这篇文章选取了业界大厂规范文档中推荐的eslint规则">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-10-16T12:55:37.000Z">
-<meta property="article:modified_time" content="2022-10-16T14:39:44.578Z">
+<meta property="article:published_time" content="2022-10-30T13:56:59.000Z">
+<meta property="article:modified_time" content="2022-10-30T14:08:50.052Z">
 <meta property="article:author" content="Jacky Chueng">
 <meta property="article:tag" content="js">
-<meta property="article:tag" content="ts">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/2022/10/16/ts-declare/">
+<link rel="canonical" href="http://example.com/2022/10/30/eslint/">
 
 
 <script id="page-configurations">
@@ -47,7 +46,7 @@
   };
 </script>
 
-  <title>ts声明文件 | 有个人走过1999</title>
+  <title>eslint常用推荐配置项 | 有个人走过1999</title>
   
 
 
@@ -198,7 +197,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/10/16/ts-declare/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/10/30/eslint/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/imgs/jc.jpg">
@@ -211,7 +210,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          ts声明文件
+          eslint常用推荐配置项
         </h1>
 
         <div class="post-meta">
@@ -222,7 +221,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-10-16 20:55:37 / 修改时间：22:39:44" itemprop="dateCreated datePublished" datetime="2022-10-16T20:55:37+08:00">2022-10-16</time>
+              <time title="创建时间：2022-10-30 21:56:59 / 修改时间：22:08:50" itemprop="dateCreated datePublished" datetime="2022-10-30T21:56:59+08:00">2022-10-30</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -231,6 +230,10 @@
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web/%E5%89%8D%E7%AB%AF%E8%A7%84%E8%8C%83/" itemprop="url" rel="index"><span itemprop="name">前端规范</span></a>
                 </span>
             </span>
 
@@ -243,13 +246,13 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2022/10/16/ts-declare/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2022/10/16/ts-declare/" itemprop="commentCount"></span>
+    <a title="valine" href="/2022/10/30/eslint/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2022/10/30/eslint/" itemprop="commentCount"></span>
     </a>
   </span>
   
   
-            <div class="post-description">本节内容是对ts中 declare 和 .d.ts文件书写方面的讨论，在实际开发过程中多少都会遇到这样的问题，比如js文件中已经有了某个方法，但ts中却提示找不到，或者干脆报错找不到某某模块；或者我们在为window拓展某些属性或方法时，ts提示错误信息等等...</div>
+            <div class="post-description">在现代团队开发中，不论是前端还是后端，都应该有一套适合团队开发的规范，而前端领域，eslint最为规范的标杆，它的内部规范是绝大数团队用来约束开发人员的代码质量的，这篇文章选取了业界大厂规范文档中推荐的eslint规则</div>
 
         </div>
       </header>
@@ -260,35 +263,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="d-ts介绍"><a href="#d-ts介绍" class="headerlink" title=".d.ts介绍"></a>.d.ts介绍</h2><p>.d.ts 一个作用是提供给js开发者，尤其是库的开发中，声明变量类型用的，因为在用js编写的代码中，是没有类型而言的，所以如果ts项目中，又引入了这些js文件，那么在使用中是肯定会报错的，看个例子</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// func.js</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min, max</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> min + (max - min) * <span class="title class_">Math</span>.<span class="title function_">random</span>()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; getRandom &#125; <span class="keyword">from</span> <span class="string">&#x27;./utils/func&#x27;</span> <span class="comment">// 无法找到模块“./utils/func”的声明文件。“func.js”隐式拥有 &quot;any&quot; 类型。ts(7016)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> res = <span class="title function_">getRandom</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
-
-<p>这里直接在引用的时候就直接报错了，因为ts根本就识别不了这个js文件模块，那么这种情况就需要去写一个同名的 <code>func.d.ts</code>去实现</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// func.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min: <span class="built_in">number</span>, max: <span class="built_in">number</span></span>): <span class="built_in">number</span></span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这个文件的位置无所谓，ts会在项目中扫码，直到找到这个.d.ts为止，所以放在哪都行</p>
-<h2 id="为外部js模块添加类型"><a href="#为外部js模块添加类型" class="headerlink" title="为外部js模块添加类型"></a>为外部js模块添加类型</h2><p>比如当你的项目中引入了 <code>demo.js</code>，这个js文件是从npm上下载的，但开发人员当初在编写代码时是使用的纯js，而你的项目是使用ts的，所以当你从这个库里面导入某些方法或变量时，ts会提示你没有这个模块，示例如下</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; ajax &#125; <span class="keyword">from</span> <span class="string">&#x27;jQuery&#x27;</span> <span class="comment">// 无法找到模块“jQuery”的声明文件。“/node_modules/jQuery/dist/jquery.js”隐式拥有 &quot;any&quot; 类型。</span></span><br></pre></td></tr></table></figure>
-
-<p>那么为了解决这种情况，就需要我们去添加一个包含 <code>declare module &#39;jQuery&#39;;</code> 的新声明(.d.ts)文件，文件名无所谓，ts会在所有.d.ts中寻找，是否存在这个模块，那么我们就添加一个这样的文件</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// module.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">module</span> <span class="string">&#x27;jQuery&#x27;</span> &#123;</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">ajax</span>(<span class="params">url: <span class="built_in">string</span></span>): <span class="title class_">Promise</span>&lt;<span class="built_in">any</span>&gt; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这样的话，前面的报错就没有了，我们可以正常地使用 jQuery 中 ajax 这个方法了，当然除了手动添加，目前市面上主流的一些js库都有了自己的.d.ts声明文件，可以尝试通过安装依赖 <code>npm i --save-dev @types/jquery</code>，如果存在则会load下来，就不必自行编写了</p>
-<h2 id="全局定义类型和变量"><a href="#全局定义类型和变量" class="headerlink" title="全局定义类型和变量"></a>全局定义类型和变量</h2><p>在ts项目中，我们经常会编写类型，然后定义变量时去使用这些类型，但是如果我们想使用一些全局类型要怎么做？这种情况也可以利用.d.ts，去declare global，那么在全局项目中就能够去用这些类型而无需引入，案例如下</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">global</span> &#123;</span><br><span class="line">  <span class="keyword">type</span> <span class="title class_">StrNum</span> = <span class="built_in">string</span> | <span class="built_in">number</span></span><br><span class="line">  <span class="keyword">const</span> jc = <span class="string">&#x27;jacky chueng&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 全局声明的类型必须是模块类型，所以至少需要export出去一个&#123;&#125;</span></span><br><span class="line"><span class="keyword">export</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// main.ts</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="attr">str</span>: <span class="title class_">StrNum</span> = <span class="string">&#x27;123&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>这样就可以完成全局的类型定义，但事实上，我们在任意的.d.ts中 declare 的变量或类型，都是能够在全局使用，所以不一定要定义在 global 里面</p>
-<h2 id="访问window上的属性"><a href="#访问window上的属性" class="headerlink" title="访问window上的属性"></a>访问window上的属性</h2><p>例如，一个js库在window上拓展了一些方法，但如果直接使用，ts会提示window上不存在这个方法，所以需要利用 .d.ts 做一些扩展</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// lib.js</span></span><br><span class="line"><span class="variable language_">window</span>.<span class="property">log</span> = <span class="function">(<span class="params">msg</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;msg: &#x27;</span>, msg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="title function_">log</span>(<span class="string">&#x27;hello&#x27;</span>) <span class="comment">// 类型“Window &amp; typeof globalThis”上不存在属性“log”</span></span><br></pre></td></tr></table></figure>
-
-<p>解决如下</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">interface</span> <span class="title class_">Window</span> &#123;</span><br><span class="line">  <span class="attr">log</span>: <span class="function">(<span class="params">msg: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>这样window中再访问log属性，就能够正常使用了</p>
+        <p>以下是eslint的rules规范</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&#x27;prefer-const&#x27;</span>: [</span><br><span class="line">    <span class="comment">// 优先使用const</span></span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">destructuring</span>: <span class="string">&#x27;all&#x27;</span>,</span><br><span class="line">      <span class="attr">ignoreReadBeforeAssign</span>: <span class="literal">true</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;no-const-assign&#x27;</span>: <span class="string">&#x27;error&#x27;</span>, <span class="comment">// const变量不允许修改</span></span><br><span class="line">  <span class="string">&#x27;no-var&#x27;</span>: <span class="number">2</span>, <span class="comment">// 不准使用var</span></span><br><span class="line">  <span class="string">&#x27;comma-dangle&#x27;</span>: [</span><br><span class="line">    <span class="comment">// 拖尾逗号情况</span></span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">arrays</span>: <span class="string">&#x27;never&#x27;</span>,</span><br><span class="line">      <span class="attr">objects</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">imports</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">exports</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">functions</span>: <span class="string">&#x27;never&#x27;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;@typescript-eslint/comma-dangle&#x27;</span>: [</span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">arrays</span>: <span class="string">&#x27;never&#x27;</span>,</span><br><span class="line">      <span class="attr">objects</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">imports</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">exports</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">functions</span>: <span class="string">&#x27;never&#x27;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;no-new-object&#x27;</span>: <span class="string">&#x27;error&#x27;</span>, <span class="comment">// 不允许new Object，应采用字面量</span></span><br><span class="line">  <span class="string">&#x27;quote-props&#x27;</span>: [</span><br><span class="line">    <span class="comment">// 对象属性添加引号</span></span><br><span class="line">    <span class="string">&#x27;warn&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;as-needed&#x27;</span>, <span class="comment">// 有必要时添加</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">keywords</span>: <span class="literal">true</span>, <span class="comment">// 关键字必须加引号</span></span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">quotes</span>: [<span class="string">&#x27;error&#x27;</span>, <span class="string">&#x27;single&#x27;</span>], <span class="comment">// 字符串用单引号</span></span><br><span class="line">  <span class="string">&#x27;no-unused-vars&#x27;</span>: <span class="number">1</span>, <span class="comment">// 未使用的变量警告</span></span><br><span class="line">  <span class="string">&#x27;prefer-destructuring&#x27;</span>: [</span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="comment">// 优先使用解构</span></span><br><span class="line">      <span class="attr">array</span>: <span class="literal">false</span>, <span class="comment">// 数组不强制</span></span><br><span class="line">      <span class="attr">object</span>: <span class="literal">true</span>, <span class="comment">// 对象强制</span></span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;prefer-template&#x27;</span>: <span class="number">2</span>, <span class="comment">// 优先使用模板字符串</span></span><br><span class="line">  <span class="string">&#x27;template-curly-spacing&#x27;</span>: [<span class="string">&#x27;error&#x27;</span>, <span class="string">&#x27;always&#x27;</span>], <span class="comment">// 模板字符串周围需要空格</span></span><br><span class="line">  <span class="string">&#x27;space-before-function-paren&#x27;</span>: [</span><br><span class="line">    <span class="comment">// 函数() 前需要空格？</span></span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">anonymous</span>: <span class="string">&#x27;never&#x27;</span>, <span class="comment">// 函数声明不需要</span></span><br><span class="line">      <span class="attr">named</span>: <span class="string">&#x27;never&#x27;</span>, <span class="comment">// 函数表达式不需要</span></span><br><span class="line">      <span class="attr">asyncArrow</span>: <span class="string">&#x27;always&#x27;</span>, <span class="comment">// async箭头函数需要</span></span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;arrow-spacing&#x27;</span>: [<span class="string">&#x27;error&#x27;</span>, &#123; <span class="attr">before</span>: <span class="literal">true</span>, <span class="attr">after</span>: <span class="literal">true</span> &#125;], <span class="comment">// 箭头函数 =&gt; 前后需要空格</span></span><br><span class="line">  <span class="string">&#x27;func-style&#x27;</span>: [<span class="string">&#x27;error&#x27;</span>, <span class="string">&#x27;expression&#x27;</span>], <span class="comment">// 使用函数表达式，而非函数声明</span></span><br><span class="line">  <span class="string">&#x27;no-loop-func&#x27;</span>: <span class="number">2</span>, <span class="comment">// 禁止在循环中包含不安全引用的任何函数</span></span><br><span class="line">  <span class="string">&#x27;no-param-reassign&#x27;</span>: [<span class="string">&#x27;error&#x27;</span>, &#123; <span class="string">&quot;props&quot;</span>: <span class="literal">true</span> &#125;], <span class="comment">// 禁止对函数参数及属性重新赋值</span></span><br><span class="line">  <span class="string">&#x27;prefer-arrow-callback&#x27;</span>: <span class="number">2</span>, <span class="comment">// 作为参数的回调函数使用箭头函数</span></span><br><span class="line">  <span class="string">&#x27;arrow-parens&#x27;</span>: [<span class="string">&quot;error&quot;</span>, <span class="string">&quot;as-needed&quot;</span>], <span class="comment">// 箭头函数优先不使用()</span></span><br><span class="line">  <span class="string">&#x27;arrow-body-style&#x27;</span>: [<span class="string">&quot;error&quot;</span>, <span class="string">&quot;as-needed&quot;</span>], <span class="comment">// 箭头函数函数体使用&#123;&#125;，视情况而定，如果纯返回值，则禁用大括号和return语句</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -299,7 +275,6 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/js/" rel="tag"># js</a>
-              <a href="/tags/ts/" rel="tag"># ts</a>
           </div>
 
         
@@ -308,12 +283,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/10/15/ts-type-compatible/" rel="prev" title="ts总结 类型兼容性">
-      <i class="fa fa-chevron-left"></i> ts总结 类型兼容性
+    <a href="/2022/10/20/ts-is/" rel="prev" title="ts 中 is 关键字的用法">
+      <i class="fa fa-chevron-left"></i> ts 中 is 关键字的用法
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/10/20/ts-is/" rel="next" title="ts 中 is 关键字的用法">
-      ts 中 is 关键字的用法 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/11/08/base-type/" rel="next" title="Javascript红宝书重点记录《基础类型篇》">
+      Javascript红宝书重点记录《基础类型篇》 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -373,7 +348,6 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#d-ts%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">.d.ts介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E5%A4%96%E9%83%A8js%E6%A8%A1%E5%9D%97%E6%B7%BB%E5%8A%A0%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">为外部js模块添加类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8F%98%E9%87%8F"><span class="nav-number">3.</span> <span class="nav-text">全局定义类型和变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BF%E9%97%AEwindow%E4%B8%8A%E7%9A%84%E5%B1%9E%E6%80%A7"><span class="nav-number">4.</span> <span class="nav-text">访问window上的属性</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

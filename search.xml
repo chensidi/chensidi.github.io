@@ -108,86 +108,195 @@
       </tags>
   </entry>
   <entry>
-    <title>Vite 性能优化</title>
-    <url>/2022/09/29/vite/</url>
-    <content><![CDATA[<h2 id="压缩方式"><a href="#压缩方式" class="headerlink" title="压缩方式"></a>压缩方式</h2><p>使用 <a href="https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md">vite-plugin-compression</a> 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高效率，同时服务端在收到客户端请求的时候，也可以选择这些已经上传好了的gz文件，返回给浏览器自行解压。</p>
-<h3 id="使用方式如下"><a href="#使用方式如下" class="headerlink" title="使用方式如下"></a>使用方式如下</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add vite-plugin-compression -D</span><br></pre></td></tr></table></figure>
+    <title>Javascript红宝书重点记录《基础类型篇》</title>
+    <url>/2022/11/08/base-type/</url>
+    <content><![CDATA[<h2 id="Symbol类型"><a href="#Symbol类型" class="headerlink" title="Symbol类型"></a>Symbol类型</h2><p>Symbol是es6中新增的一种基本数据类型，也可以读成“符号”，其特点如下</p>
+<ol>
+<li><p>不重复性，js中字符串，数字，和对象可以做到完全相等，但Symbol是不存在一模一样的两个值的，即便是 <code>Symbol() == Symbol()</code> 也是false，基于这个特点，当对象的属性为Symbol类型时，是不用担心某些属性会被覆盖的</p>
+</li>
+<li><p>不能使用 new 操作符，Symbol只能用做普通函数调用，当然可以用它的 call，apply，bind</p>
+</li>
+<li><p>可以全局注册Symbol，当采用普通函数调用时，Symbol得到的只是局部的符号值，下一次再调用时会重新注册，但Symbol提供了全局注册方法，<code>Symbol.for</code>，如果全局没有注册，则分配一个内存空间赋予首次的Symbol，下次再此注册时会直接使用内存中的值，所以在这种情况下，就能够得到两个完全相同的Symbol，这与第一点是有区别的，例如</p>
+ <figure class="highlight js"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> s = <span class="title class_">Symbol</span>.<span class="title function_">for</span>(<span class="number">1</span>) <span class="comment">// 首次注册</span></span><br><span class="line"><span class="keyword">const</span> ss = <span class="title class_">Symbol</span>.<span class="title function_">for</span>(<span class="number">1</span>) <span class="comment">// 从注册表中获取</span></span><br><span class="line">ss === s <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
 
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> viteCompression <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-compression&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">viteCompression</span>(&#123;</span><br><span class="line">      <span class="attr">verbose</span>: <span class="literal">true</span>, <span class="comment">// 是否在控制台输出压缩日志</span></span><br><span class="line">      <span class="title function_">filter</span>(<span class="params">file</span>) &#123; <span class="comment">// 筛选哪些需要压缩的文件</span></span><br><span class="line">        <span class="comment">// 忽略css文件</span></span><br><span class="line">        <span class="keyword">return</span> !file.<span class="title function_">endsWith</span>(<span class="string">&#x27;.css&#x27;</span>)</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">threshold</span>: <span class="number">50</span> * <span class="number">1024</span>, <span class="comment">// 压缩阈值，大于设定值需要压缩</span></span><br><span class="line">      <span class="attr">deleteOriginFile</span>: <span class="literal">false</span>, <span class="comment">// 压缩后是否删除源文件</span></span><br><span class="line">      <span class="attr">disable</span>: <span class="literal">false</span>, <span class="comment">// 是否禁用该插件</span></span><br><span class="line">      <span class="attr">ext</span>: <span class="string">&#x27;.gz&#x27;</span>, <span class="comment">// 压缩文件的后缀名</span></span><br><span class="line">      <span class="attr">algorithm</span>: <span class="string">&#x27;gzip&#x27;</span> <span class="comment">// 压缩算法，可选值参考文档</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<h2 id="打包分析工具"><a href="#打包分析工具" class="headerlink" title="打包分析工具"></a>打包分析工具</h2><p>安装 <a href="https://github.com/btd/rollup-plugin-visualizer">rollup-plugin-visualizer</a>, 这是一款rollup打包分析插件，因为 vite 本身在构建阶段采用的就是 rollup，所以这个插件是依赖 rollup 的，大家不要与 webpack 打包的分析插件搞混淆了。</p>
-<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add rollup-plugin-visualizer -D</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 该插件在打包时生效，并且在构建结束后，在根目录下默认生成states.html，打开这个html可以看到各种产物的情况</span></span><br><span class="line"><span class="keyword">import</span> &#123; visualizer &#125; <span class="keyword">from</span> <span class="string">&#x27;rollup-plugin-visualizer&#x27;</span></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">visualizer</span>(&#123;</span><br><span class="line">      <span class="attr">filename</span>: <span class="string">&#x27;data.html&#x27;</span>, <span class="comment">// 分析文件的文件名，默认states.html</span></span><br><span class="line">      <span class="attr">open</span>: <span class="literal">true</span>, <span class="comment">// 是否构建后自动打开分析的html</span></span><br><span class="line">      <span class="attr">template</span>: <span class="string">&#x27;treemap&#x27;</span>, <span class="comment">// 分析模板，默认就是treemap也是最直观的，可选值见文档</span></span><br><span class="line">      <span class="comment">// ...其实默认调用visualizer函数就够了，具体的options配置可以参考文档根据自身需求来配置</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<h2 id="第三方库用CDN方式引入"><a href="#第三方库用CDN方式引入" class="headerlink" title="第三方库用CDN方式引入"></a>第三方库用CDN方式引入</h2><p>在开发过程中，我们经常会引入一些第三方库，如 vue，但如果将其在构建阶段一并打包到产物中，那么体积可想而知，这时我们可以采用适当的CDN技术手段，将这些第三方库用 script 标签的形式从 CDN 引入，这样做的好处是，第一，构建产物体积减小了，效率方面有提高，第二，CDN可以缓存，第二次请求资源的时候，会利用强缓存或协商缓存，节约请求时间和资源。</p>
-<h3 id="安装-vite-plugin-cdn-import"><a href="#安装-vite-plugin-cdn-import" class="headerlink" title="安装 vite-plugin-cdn-import"></a>安装 <a href="https://github.com/mmf-fe/vite-plugin-cdn-import#readme">vite-plugin-cdn-import</a></h3><h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add vite-plugin-cdn-import -D</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> importToCDN, &#123; autoComplete &#125; <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-cdn-import&#x27;</span></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">importToCDN</span>(&#123;</span><br><span class="line">      <span class="attr">modules</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">name</span>: <span class="string">&#x27;react&#x27;</span>, <span class="comment">// 你要cdn形式的三方包名</span></span><br><span class="line">          <span class="attr">var</span>: <span class="string">&#x27;React&#x27;</span>, <span class="comment">// 该包暴露在全局的名称</span></span><br><span class="line">          <span class="attr">path</span>: <span class="string">`umd/react.production.min.js`</span>, <span class="comment">// 第三方CDN链接路径，可以是你自己的服务器上的路径</span></span><br><span class="line">          <span class="comment">// ...更多配置参考文档</span></span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 上面这种方式适合自己灵活配置要求的开发人员，拥有自己的服务器，可以将源代码部署到上面的，因为你不知道开源的CDN资源什么时候会挂掉，但配置比较麻烦，如果你对自定义配置要求不多，可以考虑使用自动导入的方式，如下</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">importToCDN</span>(&#123;</span><br><span class="line">  <span class="attr">modules</span>: [</span><br><span class="line">    <span class="title function_">autoComplete</span>(<span class="string">&#x27;vue&#x27;</span>),</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这种方式，会自动从你开发版本，也就是package.json中的版本号为准，然后生成对应的CDN链接的script标签</span></span><br></pre></td></tr></table></figure>
+<p> Symbol还提供了与for对应的一个方法，keyFor，这是用来获取传入for参数的方法，因为使用for方法，传入的参数最终都会转换为string类型，所以通过keyFor得到的数据，也都是string，当然如果调用for时没有传，那keyFor得到的也就是undefined</p>
+ <figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> sy = <span class="title class_">Symbol</span>.<span class="title function_">for</span>(<span class="literal">true</span>)</span><br><span class="line"><span class="title class_">Symbol</span>.<span class="title function_">keyFor</span>(sy) <span class="comment">// &#x27;true&#x27;</span></span><br></pre></td></tr></table></figure>
 
 <blockquote>
-<p>当你使用了该插件，那么对应的第三方库，就不会打包到最终的产物里面</p>
+<p>keyFor只能接受Symbol类型，其余类型一概报错</p>
 </blockquote>
-<h2 id="构建配置选项-build-options"><a href="#构建配置选项-build-options" class="headerlink" title="构建配置选项 build options"></a>构建配置选项 build options</h2><h3 id="assetsInlineLimit"><a href="#assetsInlineLimit" class="headerlink" title="assetsInlineLimit"></a>assetsInlineLimit</h3><ul>
-<li>类型 number</li>
-<li>默认值 4096 （4kb）</li>
-</ul>
-<p>小于此阈值的导入或引用资源将内联为 base64 编码，以避免额外的 http 请求。设置为 0 可以完全禁用此项</p>
-<h3 id="cssCodeSplit"><a href="#cssCodeSplit" class="headerlink" title="cssCodeSplit"></a>cssCodeSplit</h3><ul>
-<li>类型 boolean</li>
-<li>默认值 true</li>
-</ul>
-<p>启用&#x2F;禁用 CSS 代码拆分。当启用时，在异步 chunk 中导入的 CSS 将内联到异步 chunk 本身，并在其被加载时插入。</p>
-<p>如果禁用，整个项目中的所有 CSS 将被提取到一个 CSS 文件中。</p>
-<h3 id="sourcemap"><a href="#sourcemap" class="headerlink" title="sourcemap"></a>sourcemap</h3><ul>
-<li>类型 boolean</li>
-<li>默认值 false</li>
-</ul>
-<p>是否开启源码映射，关闭后将不会生成 .map 文件，体积将会大幅减少，但根据实际情况，看你是否希望在生产环境定位问题。</p>
-<h3 id="chunkSizeWarningLimit"><a href="#chunkSizeWarningLimit" class="headerlink" title="chunkSizeWarningLimit"></a>chunkSizeWarningLimit</h3><ul>
-<li>类型 number</li>
-<li>默认值 500 （500kb）</li>
-</ul>
-<p>当chunk的大小高于设定值后，触发警告，能够帮助你知道哪些chunk应该进一步拆分</p>
-<h3 id="terserOptions"><a href="#terserOptions" class="headerlink" title="terserOptions"></a>terserOptions</h3><p>该配置主要是利用 terser 的打包模式，vite 默认采用的是 esBuild，所以使用 terser 模式，需要将 minify 配置为 terser，然后做进一步操作</p>
-<ul>
-<li>将开发环境下的log，debugger去除</li>
-</ul>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="attr">terserOptions</span>: &#123;</span><br><span class="line">  <span class="attr">compress</span>: &#123;</span><br><span class="line">    <span class="string">&#x27;drop_console&#x27;</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="string">&#x27;drop_debugger&#x27;</span>: <span class="literal">true</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Symbol函数是接受参数的，该参数是作为该Symbol值的描述，为以后寻找该Symbol提供了追踪依据，参数一般传入的是字符串类型，但实际上能接受任何类型，只不过传入的类型最终都会变成字符串类型，例如数字，布尔会转成字符串，对象类型，会调用其<code>toString</code>方法，返回的结果作为Symbol入参的最终结果</p>
+</li>
+<li><p>Symbol.toPrimitive，当一个对象存在该属性时，如果该对象作隐式类型转换，会优先调用该方法，它的存在使得优先级高于<code>valueOf</code> 和 <code>toString</code>，需要注意，这个属性值必须是函数</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;</span><br><span class="line">  [<span class="title class_">Symbol</span>.<span class="property">toPrimitive</span>](type) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(type)</span><br><span class="line">    <span class="keyword">switch</span> (type) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;string&#x27;</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;messi&#x27;</span></span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;number&#x27;</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="number">35</span></span><br><span class="line">      <span class="attr">default</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;🏆&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">obj + <span class="number">1</span> <span class="comment">// 打印default，+ 运算可以是数字，也可以是字符串不明确，所以为default类型</span></span><br><span class="line">obj * <span class="number">1</span> <span class="comment">// 打印number，因为作数学运算需要转化为number</span></span><br><span class="line"><span class="title class_">Symbol</span>(obj) <span class="comment">// 打印string，Symbol的入参需要转换为string类型</span></span><br></pre></td></tr></table></figure>
 
-<p>除此之外，terser还提供众多可以配置的构建选项，参看 <a href="https://terser.org/">https://terser.org/</a></p>
-<h3 id="模块分割（模块联邦）"><a href="#模块分割（模块联邦）" class="headerlink" title="模块分割（模块联邦）"></a>模块分割（模块联邦）</h3><p>在不使用 CDN 情况下，我们依然需要将第三方包进行build，想想一下，如果你的入口js引入了vue，pinia，router这些，那么你在build之后会发现这些三方库全部被整合到了一个js文件中，导致体积过大，那么此时应该用到的就是模块分割</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 和前面一样，该配置属于rollup底层配置，需要写在rollupOptions对象中</span></span><br><span class="line"><span class="comment">// 示例就是将项目中的包，按照功能拆分出独立的模块，或者将一系列相关的功能包，合并到一个模块组合</span></span><br><span class="line"><span class="attr">rollupOptions</span>: &#123;</span><br><span class="line">  <span class="attr">manualChunks</span>: &#123;</span><br><span class="line">    <span class="attr">axios</span>: [<span class="string">&#x27;axios&#x27;</span>],</span><br><span class="line">    <span class="attr">jQuery</span>: [<span class="string">&#x27;jquery&#x27;</span>],</span><br><span class="line">    <span class="comment">// vue + pinia + router属于vue生态链，所以单独合成一个模块</span></span><br><span class="line">    <span class="attr">vue</span>: [<span class="string">&#x27;vue&#x27;</span>, <span class="string">&#x27;pinia&#x27;</span>, <span class="string">&#x27;vue-router&#x27;</span>]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="使用环境变量"><a href="#使用环境变量" class="headerlink" title="使用环境变量"></a>使用环境变量</h3><p>和 webpack 一样，vite 也可以通过配置环境变量来区分逻辑走向，例如 dev 环境用的 api 地址是 <code>http://test.api.com</code>,<br>而生产环境用的是 <code>http://prod.api.com</code>, 那么在使用这个变量就需要做区分，而与 webpack 不同的是，vite 并没有采用 <code>process.env.NODE_ENV</code>，而是使用 esModule 中的 <code>import.meta</code>来识别，具体如下</p>
-<p>首先在根目录下创建 <code>.env</code> 文件, 添加环境变量，注意以 <code>VITE_</code>开头</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">VITE_name = jacky</span><br></pre></td></tr></table></figure>
-
-<p>然后在任意 <code>.js</code> 文件中尝试打印 <code>import.meta.env</code></p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">BASE_URL<span class="punctuation">:</span> <span class="string">&quot;/&quot;</span></span><br><span class="line">DEV<span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">MODE<span class="punctuation">:</span> <span class="string">&quot;development&quot;</span></span><br><span class="line">PROD<span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span></span><br><span class="line">SSR<span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span></span><br><span class="line">VITE_name<span class="punctuation">:</span> <span class="string">&quot;jacky&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>可以发现配置在 env 文件中的变量已经生效，需要注意一下几点</p>
-<ol>
-<li>mode 可自由设置</li>
-<li>环境变量前缀可自由设置</li>
-<li>vite 通过mode，来寻找对应env文件</li>
+<p>也即是说，Symbol.toPrimitive对应的方法，接受的参数类型，是取决于作隐式转换时需要被转换成的数据类型，如果该对象没有这个属性，才去找有没有 <code>valueOf</code> 和 <code>toString</code> 方法</p>
+</li>
 </ol>
-<p>例如，如果 package.json 中 script 命令行中的设置</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">dev<span class="punctuation">:</span> vite --mode dev</span><br></pre></td></tr></table></figure>
-
-<p>那么在运行中，vite会尝试寻找根目录下的 <code>.env.dev</code> 文件，后缀就是 –mode 后要跟的内容，如果是<code>.env.prod</code>文件，则需要把 –mode 设置为 prod。</p>
-<p>如果需要自定义环境变量前缀，需要在 <code>vite.config.js</code> 中设置 <code>envPrefix</code>: <code>your_custom_profixer</code>，然后在 env 文件中就以此为变量前缀</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="comment">// ....</span></span><br><span class="line">  <span class="attr">envPrefix</span>: <span class="string">&#x27;jc&#x27;</span>, <span class="comment">//环境变量以jc开头</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<p>env文件中设置</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">jc_name = 100</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>web</category>
       </categories>
       <tags>
         <tag>js</tag>
-        <tag>vite</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>eslint常用推荐配置项</title>
+    <url>/2022/10/30/eslint/</url>
+    <content><![CDATA[<p>以下是eslint的rules规范</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&#x27;prefer-const&#x27;</span>: [</span><br><span class="line">    <span class="comment">// 优先使用const</span></span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">destructuring</span>: <span class="string">&#x27;all&#x27;</span>,</span><br><span class="line">      <span class="attr">ignoreReadBeforeAssign</span>: <span class="literal">true</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;no-const-assign&#x27;</span>: <span class="string">&#x27;error&#x27;</span>, <span class="comment">// const变量不允许修改</span></span><br><span class="line">  <span class="string">&#x27;no-var&#x27;</span>: <span class="number">2</span>, <span class="comment">// 不准使用var</span></span><br><span class="line">  <span class="string">&#x27;comma-dangle&#x27;</span>: [</span><br><span class="line">    <span class="comment">// 拖尾逗号情况</span></span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">arrays</span>: <span class="string">&#x27;never&#x27;</span>,</span><br><span class="line">      <span class="attr">objects</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">imports</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">exports</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">functions</span>: <span class="string">&#x27;never&#x27;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;@typescript-eslint/comma-dangle&#x27;</span>: [</span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">arrays</span>: <span class="string">&#x27;never&#x27;</span>,</span><br><span class="line">      <span class="attr">objects</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">imports</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">exports</span>: <span class="string">&#x27;always-multiline&#x27;</span>,</span><br><span class="line">      <span class="attr">functions</span>: <span class="string">&#x27;never&#x27;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;no-new-object&#x27;</span>: <span class="string">&#x27;error&#x27;</span>, <span class="comment">// 不允许new Object，应采用字面量</span></span><br><span class="line">  <span class="string">&#x27;quote-props&#x27;</span>: [</span><br><span class="line">    <span class="comment">// 对象属性添加引号</span></span><br><span class="line">    <span class="string">&#x27;warn&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;as-needed&#x27;</span>, <span class="comment">// 有必要时添加</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">keywords</span>: <span class="literal">true</span>, <span class="comment">// 关键字必须加引号</span></span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">quotes</span>: [<span class="string">&#x27;error&#x27;</span>, <span class="string">&#x27;single&#x27;</span>], <span class="comment">// 字符串用单引号</span></span><br><span class="line">  <span class="string">&#x27;no-unused-vars&#x27;</span>: <span class="number">1</span>, <span class="comment">// 未使用的变量警告</span></span><br><span class="line">  <span class="string">&#x27;prefer-destructuring&#x27;</span>: [</span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="comment">// 优先使用解构</span></span><br><span class="line">      <span class="attr">array</span>: <span class="literal">false</span>, <span class="comment">// 数组不强制</span></span><br><span class="line">      <span class="attr">object</span>: <span class="literal">true</span>, <span class="comment">// 对象强制</span></span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;prefer-template&#x27;</span>: <span class="number">2</span>, <span class="comment">// 优先使用模板字符串</span></span><br><span class="line">  <span class="string">&#x27;template-curly-spacing&#x27;</span>: [<span class="string">&#x27;error&#x27;</span>, <span class="string">&#x27;always&#x27;</span>], <span class="comment">// 模板字符串周围需要空格</span></span><br><span class="line">  <span class="string">&#x27;space-before-function-paren&#x27;</span>: [</span><br><span class="line">    <span class="comment">// 函数() 前需要空格？</span></span><br><span class="line">    <span class="string">&#x27;error&#x27;</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">anonymous</span>: <span class="string">&#x27;never&#x27;</span>, <span class="comment">// 函数声明不需要</span></span><br><span class="line">      <span class="attr">named</span>: <span class="string">&#x27;never&#x27;</span>, <span class="comment">// 函数表达式不需要</span></span><br><span class="line">      <span class="attr">asyncArrow</span>: <span class="string">&#x27;always&#x27;</span>, <span class="comment">// async箭头函数需要</span></span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&#x27;arrow-spacing&#x27;</span>: [<span class="string">&#x27;error&#x27;</span>, &#123; <span class="attr">before</span>: <span class="literal">true</span>, <span class="attr">after</span>: <span class="literal">true</span> &#125;], <span class="comment">// 箭头函数 =&gt; 前后需要空格</span></span><br><span class="line">  <span class="string">&#x27;func-style&#x27;</span>: [<span class="string">&#x27;error&#x27;</span>, <span class="string">&#x27;expression&#x27;</span>], <span class="comment">// 使用函数表达式，而非函数声明</span></span><br><span class="line">  <span class="string">&#x27;no-loop-func&#x27;</span>: <span class="number">2</span>, <span class="comment">// 禁止在循环中包含不安全引用的任何函数</span></span><br><span class="line">  <span class="string">&#x27;no-param-reassign&#x27;</span>: [<span class="string">&#x27;error&#x27;</span>, &#123; <span class="string">&quot;props&quot;</span>: <span class="literal">true</span> &#125;], <span class="comment">// 禁止对函数参数及属性重新赋值</span></span><br><span class="line">  <span class="string">&#x27;prefer-arrow-callback&#x27;</span>: <span class="number">2</span>, <span class="comment">// 作为参数的回调函数使用箭头函数</span></span><br><span class="line">  <span class="string">&#x27;arrow-parens&#x27;</span>: [<span class="string">&quot;error&quot;</span>, <span class="string">&quot;as-needed&quot;</span>], <span class="comment">// 箭头函数优先不使用()</span></span><br><span class="line">  <span class="string">&#x27;arrow-body-style&#x27;</span>: [<span class="string">&quot;error&quot;</span>, <span class="string">&quot;as-needed&quot;</span>], <span class="comment">// 箭头函数函数体使用&#123;&#125;，视情况而定，如果纯返回值，则禁用大括号和return语句</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>web</category>
+        <category>前端规范</category>
+      </categories>
+      <tags>
+        <tag>js</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>自定义脚手架</title>
+    <url>/2022/09/30/custom-cli/</url>
+    <content><![CDATA[<h2 id="自定义cli"><a href="#自定义cli" class="headerlink" title="自定义cli"></a>自定义cli</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>先使用npm 或者 yarn，完成package.json 的创建，命令如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn init -y </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这是默认配置，你也可以不用-y，然后按照它的提示一步一步往下走</span></span><br></pre></td></tr></table></figure>
+
+<p>然后添加命令行入口文件，我是在根目录下建立 <code>cli</code> 文件夹，并添加 <code>index.js</code>，可以先随便写一些内容如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;cli start&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这时候我们用node去执行，看看是否有输出</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">node ./cli/index</span><br></pre></td></tr></table></figure>
+
+<p>可以看到确实有输出，但是如何用命令行形式将其输出？例如</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">希望这样的命令行，就能将index.js内容输出</span></span><br><span class="line">jacky</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是生成自定义的cli，很简单其实，往下看</p>
+<h3 id="cli生成"><a href="#cli生成" class="headerlink" title="cli生成"></a>cli生成</h3><p>找到package.json，添加bin字段，并对应配置，如下</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;bin&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jacky&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./cli/index.js&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>意思就是，定义一个cli命令，并且指定其入口执行js文件</p>
+<p>接下来就是，将这个命令链接到全局，我们能够在任何目录下通过这个命令来执行 <code>cli/index.js</code>中的代码<br>操作如下，在项目根目录，执行</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm link</span><br></pre></td></tr></table></figure>
+
+<p>这个时候我们可以查看是否cli命令行已经生成了</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm list -g</span><br></pre></td></tr></table></figure>
+
+<p>这是我们可以尝试在命令行里执行 jakcy，看看有没有反应，结果肯定是报错，因为我们的入口文件，需要指定在node环境下运行，就需要在该文件头部定义</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">#!usr/bin/env node</span><br></pre></td></tr></table></figure>
+
+<p>这样就能够让代码正确运行在node环境，重新执行jacky命令，终端就会输出index.js 内容</p>
+<blockquote>
+<p>需要注意，如果添加头部配置后，重新执行命令依然报错，可以先解除命令，在根目录执行 <code>npm unlink jacky-cli</code>,然后全局卸载掉 <code>npm uninstall jacky-cli</code>, 然后重新 <code>npm link</code>, 这样重新走一遍流程就能解决了</p>
+</blockquote>
+<h3 id="命令行参数"><a href="#命令行参数" class="headerlink" title="命令行参数"></a>命令行参数</h3><p>上面我们介绍了 cli 的最基本配置过程，那么用户在使用 cli 的时候，肯定会有参数支持，例如 vite 支持 –template，rollup 支持 –output，这些就是参数，也就是让命令行走不同的逻辑分支，完成不同功能。</p>
+<h4 id="安装commander依赖"><a href="#安装commander依赖" class="headerlink" title="安装commander依赖"></a>安装commander依赖</h4><p><code>commander</code> 是一款解决命令行问题的npm包，大部分脚手架工具都会安装这个包，安装它的目的就是帮助我们去处理输入的命令参数。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i commander</span><br></pre></td></tr></table></figure>
+
+<p>然后我们可以在 index.js 中添加内容</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要从包里导出program对象</span></span><br><span class="line"><span class="keyword">const</span> &#123; program &#125; = <span class="built_in">require</span>(<span class="string">&quot;commander&quot;</span>);</span><br><span class="line"></span><br><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;init&#x27;</span>) <span class="comment">// 配置命令 =&gt; jacky init</span></span><br><span class="line">  .<span class="title function_">option</span>(<span class="string">&#x27;--type &lt;char&gt;&#x27;</span>, <span class="string">&#x27;input your type&#x27;</span>, <span class="string">&#x27;vue&#x27;</span>) <span class="comment">// 配置参数 =&gt; jacky init --type react</span></span><br><span class="line">  .<span class="title function_">action</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res)</span><br><span class="line">    <span class="comment">// &#123; type: &#x27;react&#x27; &#125;</span></span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解析输入的命令参数</span></span><br><span class="line">program.<span class="title function_">parse</span>(process.<span class="property">argv</span>)</span><br></pre></td></tr></table></figure>
+
+<p>commander 包提供了一个 program 的对象，方便我们快速地对命令行内容操作和配置，当然它内部还提供了更强大的功能，有兴趣可以移步官网<br>这里重点介绍program对象</p>
+<ul>
+<li>command方法，定义命令名称，配置后会生成如，<code>jacky init</code>的命令</li>
+<li>option方法，定义命令参数，是针对上述命令完成进一步配置的，可设置多个option，可以接受三个参数<ul>
+<li>参数1，参数名称和类型，必填</li>
+<li>参数2，参数类型说明，可选</li>
+<li>参数3，参数默认值，可选</li>
+</ul>
+</li>
+<li>action方法，在输入完命令后的回调函数，接收的参数就是输入的命令内容组成的对象</li>
+</ul>
+<h4 id="安装inquirer依赖"><a href="#安装inquirer依赖" class="headerlink" title="安装inquirer依赖"></a>安装inquirer依赖</h4><p>inquirer是提供给用户在命令行交互的包，例如询问，输入，选择等多种交互方式</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i inquirer</span><br></pre></td></tr></table></figure>
+
+<p>然后我们在index.js 中再添加一条命令，并且加入交互操作</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  .<span class="title function_">action</span>(<span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="title function_">prompt</span>([</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="string">&#x27;input&#x27;</span>, <span class="comment">// 交互类型，输入形式</span></span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;name&#x27;</span>, <span class="comment">// 字段名称</span></span><br><span class="line">        <span class="attr">default</span>: <span class="string">&#x27;jacky cheung&#x27;</span>, <span class="comment">// 默认值</span></span><br><span class="line">        <span class="attr">message</span>: <span class="string">&#x27;please input your name&#x27;</span> <span class="comment">// 交互信息</span></span><br><span class="line">      &#125;</span><br><span class="line">    ])</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;res: &#x27;</span>, res)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>然后我们敲下 <code>jacky create</code>, 终端会出现提示，然后我们输入一些内容，看看会是什么现象</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PS D:\JackyProgram\jacky-cli&gt; jacky create    </span><br><span class="line">? please input your name jacky cheung</span><br><span class="line">res:  &#123; name: &#x27;jacky cheung&#x27; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>打印的结果就是，将prompt配置的字段整合为一个对象，当然这里介绍的都是基本操作，更多的api请参考官网，这里是做铺垫为了后面的项目</p>
+<p>propmt接受的是一个数组，也就是询问的条数</p>
+<ul>
+<li>type，交互类型，如 input, confirm, checkbox, list, number, password等</li>
+<li>name，字段名称，也就是最终prompt的返回的结果，由这些字段组装而成</li>
+<li>default，字段默认值，如果直接按回车，就以该值作为输入值</li>
+<li>message，交互提示说明文字，在交互时会给予提示</li>
+</ul>
+<p>prompt本身返回一个promise，所以你可以使用 <code>async/await</code>，也可以使用 <code>.then</code> 形式做后续操作。</p>
+<h2 id="实现Git规范"><a href="#实现Git规范" class="headerlink" title="实现Git规范"></a>实现Git规范</h2><p>前面的内容已经介绍了如何完成简单的cli，并且能够处理命令和交互，这一节我们讨论如何利用cli实现对git方面的提交约束</p>
+<h3 id="jacky-git-命令"><a href="#jacky-git-命令" class="headerlink" title="jacky git 命令"></a>jacky git 命令</h3><p>我们期望有这样一个命令，<code>jacky git</code>，然后通过参数，完成对git规范的配置，配置git规范的流程见另一篇文章<br><a href="/2022/10/01/commit-lint-steps/">git提交规范定制流程</a></p>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>node.js</tag>
+        <tag>cli</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ts声明文件</title>
+    <url>/2022/10/16/ts-declare/</url>
+    <content><![CDATA[<h2 id="d-ts介绍"><a href="#d-ts介绍" class="headerlink" title=".d.ts介绍"></a>.d.ts介绍</h2><p>.d.ts 一个作用是提供给js开发者，尤其是库的开发中，声明变量类型用的，因为在用js编写的代码中，是没有类型而言的，所以如果ts项目中，又引入了这些js文件，那么在使用中是肯定会报错的，看个例子</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// func.js</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min, max</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> min + (max - min) * <span class="title class_">Math</span>.<span class="title function_">random</span>()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; getRandom &#125; <span class="keyword">from</span> <span class="string">&#x27;./utils/func&#x27;</span> <span class="comment">// 无法找到模块“./utils/func”的声明文件。“func.js”隐式拥有 &quot;any&quot; 类型。ts(7016)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> res = <span class="title function_">getRandom</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这里直接在引用的时候就直接报错了，因为ts根本就识别不了这个js文件模块，那么这种情况就需要去写一个同名的 <code>func.d.ts</code>去实现</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// func.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min: <span class="built_in">number</span>, max: <span class="built_in">number</span></span>): <span class="built_in">number</span></span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个文件的位置无所谓，ts会在项目中扫码，直到找到这个.d.ts为止，所以放在哪都行</p>
+<h2 id="为外部js模块添加类型"><a href="#为外部js模块添加类型" class="headerlink" title="为外部js模块添加类型"></a>为外部js模块添加类型</h2><p>比如当你的项目中引入了 <code>demo.js</code>，这个js文件是从npm上下载的，但开发人员当初在编写代码时是使用的纯js，而你的项目是使用ts的，所以当你从这个库里面导入某些方法或变量时，ts会提示你没有这个模块，示例如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; ajax &#125; <span class="keyword">from</span> <span class="string">&#x27;jQuery&#x27;</span> <span class="comment">// 无法找到模块“jQuery”的声明文件。“/node_modules/jQuery/dist/jquery.js”隐式拥有 &quot;any&quot; 类型。</span></span><br></pre></td></tr></table></figure>
+
+<p>那么为了解决这种情况，就需要我们去添加一个包含 <code>declare module &#39;jQuery&#39;;</code> 的新声明(.d.ts)文件，文件名无所谓，ts会在所有.d.ts中寻找，是否存在这个模块，那么我们就添加一个这样的文件</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// module.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">module</span> <span class="string">&#x27;jQuery&#x27;</span> &#123;</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">ajax</span>(<span class="params">url: <span class="built_in">string</span></span>): <span class="title class_">Promise</span>&lt;<span class="built_in">any</span>&gt; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样的话，前面的报错就没有了，我们可以正常地使用 jQuery 中 ajax 这个方法了，当然除了手动添加，目前市面上主流的一些js库都有了自己的.d.ts声明文件，可以尝试通过安装依赖 <code>npm i --save-dev @types/jquery</code>，如果存在则会load下来，就不必自行编写了</p>
+<h2 id="全局定义类型和变量"><a href="#全局定义类型和变量" class="headerlink" title="全局定义类型和变量"></a>全局定义类型和变量</h2><p>在ts项目中，我们经常会编写类型，然后定义变量时去使用这些类型，但是如果我们想使用一些全局类型要怎么做？这种情况也可以利用.d.ts，去declare global，那么在全局项目中就能够去用这些类型而无需引入，案例如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">global</span> &#123;</span><br><span class="line">  <span class="keyword">type</span> <span class="title class_">StrNum</span> = <span class="built_in">string</span> | <span class="built_in">number</span></span><br><span class="line">  <span class="keyword">const</span> jc = <span class="string">&#x27;jacky chueng&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 全局声明的类型必须是模块类型，所以至少需要export出去一个&#123;&#125;</span></span><br><span class="line"><span class="keyword">export</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// main.ts</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="attr">str</span>: <span class="title class_">StrNum</span> = <span class="string">&#x27;123&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就可以完成全局的类型定义，但事实上，我们在任意的.d.ts中 declare 的变量或类型，都是能够在全局使用，所以不一定要定义在 global 里面</p>
+<h2 id="访问window上的属性"><a href="#访问window上的属性" class="headerlink" title="访问window上的属性"></a>访问window上的属性</h2><p>例如，一个js库在window上拓展了一些方法，但如果直接使用，ts会提示window上不存在这个方法，所以需要利用 .d.ts 做一些扩展</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// lib.js</span></span><br><span class="line"><span class="variable language_">window</span>.<span class="property">log</span> = <span class="function">(<span class="params">msg</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;msg: &#x27;</span>, msg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="title function_">log</span>(<span class="string">&#x27;hello&#x27;</span>) <span class="comment">// 类型“Window &amp; typeof globalThis”上不存在属性“log”</span></span><br></pre></td></tr></table></figure>
+
+<p>解决如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">interface</span> <span class="title class_">Window</span> &#123;</span><br><span class="line">  <span class="attr">log</span>: <span class="function">(<span class="params">msg: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样window中再访问log属性，就能够正常使用了</p>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>js</tag>
+        <tag>ts</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ts 中 is 关键字的用法</title>
+    <url>/2022/10/20/ts-is/</url>
+    <content><![CDATA[<p>is 可以看作一种特殊的 boolean 类型，并且用于函数的返回类型，先看一个例子</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">isString</span>(<span class="params">val: <span class="built_in">string</span> | <span class="built_in">number</span></span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> val === <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;string type&#x27;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;number type&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">returnReq</span>(<span class="params">val: <span class="built_in">string</span> | <span class="built_in">number</span></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> req</span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">isString</span>(val)) &#123;</span><br><span class="line">    req = &#123;</span><br><span class="line">      <span class="attr">len</span>: val.<span class="property">length</span> <span class="comment">// 类型“number”上不存在属性“length”。</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    req = &#123;</span><br><span class="line">      <span class="attr">len</span>: val.<span class="title function_">toString</span>().<span class="property">length</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(req)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段code的意思是，isString用作是否为 string 的判断，returnReq 函数用作返回一个对象格式的报文，但这样的代码是会报错的，虽然 isString 函数限制了输入类型仅为 string 或 number，并且能准确返回值 true&#x2F;false，但是 ts 是在编译阶段起作用的，至于真正运行时是什么样子，是不知道的，所以即使isString函数没有问题，但是在尝试访问 val.length 时，val的类型依然时 string | number，所以number身上不存在 length，因此报错。</p>
+<p>为了解决这个问题，is 就可以派上用场了，它的用法非常简单，只需要在函数的返回值后面加上 xx is yourType</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">isString</span>(<span class="params">val: <span class="built_in">string</span> | <span class="built_in">number</span></span>): val is <span class="built_in">string</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> val === <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;string type&#x27;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;number type&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果这样的话，在当 isString(val) 返回为 true 的情况下，val的类型就被约束成更精确的 string，否则将被推断成 number，所以后续对val.length 的操作就不会提示报错了</p>
+<p>简单总结下</p>
+<p>如果一个函数的参数被is限定了某种类型T，那么在当这个函数执行返回true的时候，这时参数的类型就是之前限定的T，反之就是除了T之外的类型，当然 is 的使用场景在实际中，可以被 as 断言去替换，所以使用的情况就因人而异了</p>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>js</tag>
+        <tag>ts</tag>
       </tags>
   </entry>
   <entry>
@@ -272,134 +381,75 @@
 
 <p>思路，需要利用 infer 推断出函数类型中的参数类型 arg 和返回类型 return，其中 arg 类型应该拆开，看是否有第一位和剩余位数,如果第一位都没有，直接返回无参数的函数类型，其返回值为 return类型；如果有第一位，则返回带参数的函数类型，继续对剩余参数做递归判断，具体实现代码如下</p>
 <figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">Curry</span>&lt;</span><br><span class="line">  F <span class="keyword">extends</span> (...<span class="attr">args</span>: <span class="built_in">any</span>[]) =&gt; <span class="built_in">any</span>,</span><br><span class="line">&gt; = F <span class="keyword">extends</span> (...<span class="attr">arg</span>: [infer A, ...infer R]) =&gt; infer <span class="title class_">Return</span> ?</span><br><span class="line">(</span><br><span class="line">  <span class="built_in">unknown</span> <span class="keyword">extends</span> A ?</span><br><span class="line">  <span class="function">() =&gt;</span> <span class="title class_">Return</span> :</span><br><span class="line">  <span class="function">(<span class="params">arg: A</span>) =&gt;</span> (</span><br><span class="line">    R <span class="keyword">extends</span> [infer F, ...infer L] ?</span><br><span class="line">    <span class="title class_">Curry</span>&lt;<span class="function">(<span class="params">...arg: [...R]</span>) =&gt;</span> <span class="title class_">Return</span>&gt;</span><br><span class="line">    : <span class="title class_">Return</span></span><br><span class="line">  )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>web</category>
-      </categories>
-      <tags>
-        <tag>js</tag>
-        <tag>ts</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ts声明文件</title>
-    <url>/2022/10/16/ts-declare/</url>
-    <content><![CDATA[<h2 id="d-ts介绍"><a href="#d-ts介绍" class="headerlink" title=".d.ts介绍"></a>.d.ts介绍</h2><p>.d.ts 一个作用是提供给js开发者，尤其是库的开发中，声明变量类型用的，因为在用js编写的代码中，是没有类型而言的，所以如果ts项目中，又引入了这些js文件，那么在使用中是肯定会报错的，看个例子</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// func.js</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min, max</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> min + (max - min) * <span class="title class_">Math</span>.<span class="title function_">random</span>()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; getRandom &#125; <span class="keyword">from</span> <span class="string">&#x27;./utils/func&#x27;</span> <span class="comment">// 无法找到模块“./utils/func”的声明文件。“func.js”隐式拥有 &quot;any&quot; 类型。ts(7016)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> res = <span class="title function_">getRandom</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="实现Pick工具类"><a href="#实现Pick工具类" class="headerlink" title="实现Pick工具类"></a>实现Pick工具类</h2><p>在 ts 中有很多内置的工具，Pick是其中之一，作用是从一个对象接口或对象类型中，取出目标属性形成新的类型，如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> s = <span class="title class_">Pick</span>&lt;&#123;<span class="attr">a</span>: <span class="built_in">string</span>, <span class="attr">b</span>: <span class="built_in">number</span>&#125;, <span class="string">&#x27;a&#x27;</span>&gt;</span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">  type s = &#123;</span></span><br><span class="line"><span class="comment">    a: string;</span></span><br><span class="line"><span class="comment">  &#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
 
-<p>这里直接在引用的时候就直接报错了，因为ts根本就识别不了这个js文件模块，那么这种情况就需要去写一个同名的 <code>func.d.ts</code>去实现</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// func.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min: <span class="built_in">number</span>, max: <span class="built_in">number</span></span>): <span class="built_in">number</span></span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>思路，利用泛型特点，Pick是接受两个泛型，第二个泛型肯定是继承自第一个的泛型类型的所有key值，然后在形成新的类型时，遍历这些key值，并赋予对应的类型即可，实现如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">MyPick</span>&lt;T, K <span class="keyword">extends</span> keyof T&gt; = &#123;</span><br><span class="line">  [k <span class="keyword">in</span> K]: T[k]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>这个文件的位置无所谓，ts会在项目中扫码，直到找到这个.d.ts为止，所以放在哪都行</p>
-<h2 id="为外部js模块添加类型"><a href="#为外部js模块添加类型" class="headerlink" title="为外部js模块添加类型"></a>为外部js模块添加类型</h2><p>比如当你的项目中引入了 <code>demo.js</code>，这个js文件是从npm上下载的，但开发人员当初在编写代码时是使用的纯js，而你的项目是使用ts的，所以当你从这个库里面导入某些方法或变量时，ts会提示你没有这个模块，示例如下</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; ajax &#125; <span class="keyword">from</span> <span class="string">&#x27;jQuery&#x27;</span> <span class="comment">// 无法找到模块“jQuery”的声明文件。“/node_modules/jQuery/dist/jquery.js”隐式拥有 &quot;any&quot; 类型。</span></span><br></pre></td></tr></table></figure>
+<h2 id="实现Record工具类"><a href="#实现Record工具类" class="headerlink" title="实现Record工具类"></a>实现Record工具类</h2><p>ts 中内置的 Recore 类型，作用是将指定属性名赋值目标类型，最后形成新的一个类型，如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> messi = <span class="title class_">Record</span>&lt;<span class="string">&#x27;a&#x27;</span> | <span class="string">&#x27;b&#x27;</span> | <span class="number">1</span>, <span class="built_in">number</span> | <span class="built_in">string</span>&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">type messi = &#123;</span></span><br><span class="line"><span class="comment">    1: string | number;</span></span><br><span class="line"><span class="comment">    a: string | number;</span></span><br><span class="line"><span class="comment">    b: string | number;</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
 
-<p>那么为了解决这种情况，就需要我们去添加一个包含 <code>declare module &#39;jQuery&#39;;</code> 的新声明(.d.ts)文件，文件名无所谓，ts会在所有.d.ts中寻找，是否存在这个模块，那么我们就添加一个这样的文件</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// module.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">module</span> <span class="string">&#x27;jQuery&#x27;</span> &#123;</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">ajax</span>(<span class="params">url: <span class="built_in">string</span></span>): <span class="title class_">Promise</span>&lt;<span class="built_in">any</span>&gt; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>思路，和 Record 一致，也是利用泛型遍历，将第一个泛型的值遍历得到key，第二个泛型类型赋值给key即可，但需要注意，当使用 [k in K]的前提是，K 应该被限制在 string，number，symbol中，因为只有这三种类型才能被 [k in K] 这种语法遍历，如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">MyRecord</span>&lt;K <span class="keyword">extends</span> <span class="built_in">string</span> | <span class="built_in">number</span> | <span class="built_in">symbol</span>, T&gt; = &#123;</span><br><span class="line">  [k <span class="keyword">in</span> K]: T</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>这样的话，前面的报错就没有了，我们可以正常地使用 jQuery 中 ajax 这个方法了，当然除了手动添加，目前市面上主流的一些js库都有了自己的.d.ts声明文件，可以尝试通过安装依赖 <code>npm i --save-dev @types/jquery</code>，如果存在则会load下来，就不必自行编写了</p>
-<h2 id="全局定义类型和变量"><a href="#全局定义类型和变量" class="headerlink" title="全局定义类型和变量"></a>全局定义类型和变量</h2><p>在ts项目中，我们经常会编写类型，然后定义变量时去使用这些类型，但是如果我们想使用一些全局类型要怎么做？这种情况也可以利用.d.ts，去declare global，那么在全局项目中就能够去用这些类型而无需引入，案例如下</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">global</span> &#123;</span><br><span class="line">  <span class="keyword">type</span> <span class="title class_">StrNum</span> = <span class="built_in">string</span> | <span class="built_in">number</span></span><br><span class="line">  <span class="keyword">const</span> jc = <span class="string">&#x27;jacky chueng&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 全局声明的类型必须是模块类型，所以至少需要export出去一个&#123;&#125;</span></span><br><span class="line"><span class="keyword">export</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// main.ts</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="attr">str</span>: <span class="title class_">StrNum</span> = <span class="string">&#x27;123&#x27;</span></span><br></pre></td></tr></table></figure>
+<h2 id="实现Merge工具类"><a href="#实现Merge工具类" class="headerlink" title="实现Merge工具类"></a>实现Merge工具类</h2><p>实现一个Merge工具类型，用于把两个类型合并成一个新的类型。第二种类型（SecondType）的Keys将会覆盖第一种类型（FirstType）的Keys。具体的使用示例如下所示</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">Foo</span> = &#123; </span><br><span class="line">  <span class="attr">a</span>: <span class="built_in">number</span>;</span><br><span class="line">  <span class="attr">b</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">Bar</span> = &#123;</span><br><span class="line">  <span class="attr">b</span>: <span class="built_in">number</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">Merge</span>&lt;<span class="title class_">FirstType</span>, <span class="title class_">SecondType</span>&gt; = <span class="comment">// 你的实现代码</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">ab</span>: <span class="title class_">Merge</span>&lt;<span class="title class_">Foo</span>, <span class="title class_">Bar</span>&gt; = &#123; <span class="attr">a</span>: <span class="number">1</span>, <span class="attr">b</span>: <span class="number">2</span> &#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p>这样就可以完成全局的类型定义，但事实上，我们在任意的.d.ts中 declare 的变量或类型，都是能够在全局使用，所以不一定要定义在 global 里面</p>
-<h2 id="访问window上的属性"><a href="#访问window上的属性" class="headerlink" title="访问window上的属性"></a>访问window上的属性</h2><p>例如，一个js库在window上拓展了一些方法，但如果直接使用，ts会提示window上不存在这个方法，所以需要利用 .d.ts 做一些扩展</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// lib.js</span></span><br><span class="line"><span class="variable language_">window</span>.<span class="property">log</span> = <span class="function">(<span class="params">msg</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;msg: &#x27;</span>, msg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>思路，merge这个工具有点像平时使用的交叉类型，但不同的是，交叉类型如果遇到某个属性是不同类型的，那么交叉过后该属性类型为 never，而merge的工具则是让后面的类型覆盖前面的类型，就和js中 <code>Object.assign</code> 一样合并，只不过ts合并的是类型，那我们实现的步骤应该如下</p>
+<ol>
+<li>先遍历 FirstType 的 key</li>
+<li>判断 key 是否也存在与 SecondType 上</li>
+<li>如果是，则使用 <code>SecondType[key]</code> 作为最终类型，否则就说明该 key 不存在SecondType，就继续使用原 FirstType[key]</li>
+<li>从 SecondType 中剔除 FirstType 的key，因为已经遍历过一遍了</li>
+<li>将第3步和第4步得到的类型做交叉运算</li>
+</ol>
+<p>实现如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">Merge</span>&lt;<span class="title class_">FirstType</span>, <span class="title class_">SecondType</span>&gt; = &#123;</span><br><span class="line">  [k <span class="keyword">in</span> keyof <span class="title class_">FirstType</span>]: k <span class="keyword">extends</span> keyof <span class="title class_">SecondType</span></span><br><span class="line">    ? <span class="title class_">SecondType</span>[k]</span><br><span class="line">    : <span class="title class_">FirstType</span>[k]</span><br><span class="line">&#125; &amp; <span class="title class_">Omit</span>&lt;<span class="title class_">SecondType</span>, keyof <span class="title class_">FirstType</span>&gt;</span><br></pre></td></tr></table></figure>
 
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="title function_">log</span>(<span class="string">&#x27;hello&#x27;</span>) <span class="comment">// 类型“Window &amp; typeof globalThis”上不存在属性“log”</span></span><br></pre></td></tr></table></figure>
-
-<p>解决如下</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">interface</span> <span class="title class_">Window</span> &#123;</span><br><span class="line">  <span class="attr">log</span>: <span class="function">(<span class="params">msg: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>这样window中再访问log属性，就能够正常使用了</p>
-]]></content>
-      <categories>
-        <category>web</category>
-      </categories>
-      <tags>
-        <tag>js</tag>
-        <tag>ts</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>自定义脚手架</title>
-    <url>/2022/09/30/custom-cli/</url>
-    <content><![CDATA[<h2 id="自定义cli"><a href="#自定义cli" class="headerlink" title="自定义cli"></a>自定义cli</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>先使用npm 或者 yarn，完成package.json 的创建，命令如下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn init -y </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这是默认配置，你也可以不用-y，然后按照它的提示一步一步往下走</span></span><br></pre></td></tr></table></figure>
-
-<p>然后添加命令行入口文件，我是在根目录下建立 <code>cli</code> 文件夹，并添加 <code>index.js</code>，可以先随便写一些内容如下</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;cli start&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<p>这时候我们用node去执行，看看是否有输出</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">node ./cli/index</span><br></pre></td></tr></table></figure>
-
-<p>可以看到确实有输出，但是如何用命令行形式将其输出？例如</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">希望这样的命令行，就能将index.js内容输出</span></span><br><span class="line">jacky</span><br></pre></td></tr></table></figure>
-
-<p>接下来就是生成自定义的cli，很简单其实，往下看</p>
-<h3 id="cli生成"><a href="#cli生成" class="headerlink" title="cli生成"></a>cli生成</h3><p>找到package.json，添加bin字段，并对应配置，如下</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;bin&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jacky&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./cli/index.js&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>意思就是，定义一个cli命令，并且指定其入口执行js文件</p>
-<p>接下来就是，将这个命令链接到全局，我们能够在任何目录下通过这个命令来执行 <code>cli/index.js</code>中的代码<br>操作如下，在项目根目录，执行</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm link</span><br></pre></td></tr></table></figure>
-
-<p>这个时候我们可以查看是否cli命令行已经生成了</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm list -g</span><br></pre></td></tr></table></figure>
-
-<p>这是我们可以尝试在命令行里执行 jakcy，看看有没有反应，结果肯定是报错，因为我们的入口文件，需要指定在node环境下运行，就需要在该文件头部定义</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">#!usr/bin/env node</span><br></pre></td></tr></table></figure>
-
-<p>这样就能够让代码正确运行在node环境，重新执行jacky命令，终端就会输出index.js 内容</p>
 <blockquote>
-<p>需要注意，如果添加头部配置后，重新执行命令依然报错，可以先解除命令，在根目录执行 <code>npm unlink jacky-cli</code>,然后全局卸载掉 <code>npm uninstall jacky-cli</code>, 然后重新 <code>npm link</code>, 这样重新走一遍流程就能解决了</p>
+<p>本身还可以省略一步，就是直接将第三步得到的类型 FirstTypePlus &amp; SecondType，因为FirstTypePlus已经包含了公共的类型且类型值已经是SecondType中的，直接做交叉运算也是可以，但不够优雅</p>
 </blockquote>
-<h3 id="命令行参数"><a href="#命令行参数" class="headerlink" title="命令行参数"></a>命令行参数</h3><p>上面我们介绍了 cli 的最基本配置过程，那么用户在使用 cli 的时候，肯定会有参数支持，例如 vite 支持 –template，rollup 支持 –output，这些就是参数，也就是让命令行走不同的逻辑分支，完成不同功能。</p>
-<h4 id="安装commander依赖"><a href="#安装commander依赖" class="headerlink" title="安装commander依赖"></a>安装commander依赖</h4><p><code>commander</code> 是一款解决命令行问题的npm包，大部分脚手架工具都会安装这个包，安装它的目的就是帮助我们去处理输入的命令参数。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i commander</span><br></pre></td></tr></table></figure>
+<h2 id="RemoveNever工具类"><a href="#RemoveNever工具类" class="headerlink" title="RemoveNever工具类"></a>RemoveNever工具类</h2><p>实现一个 RemoveNever 工具，能够将一个类型上的 never类型值去掉只保留其他值</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">RemoveNever</span>&lt;T&gt; = <span class="comment">//</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">Messi</span> = &#123;</span><br><span class="line">  <span class="attr">speed</span>: <span class="number">99</span>,</span><br><span class="line">  <span class="attr">shoot</span>: <span class="number">99</span>,</span><br><span class="line">  <span class="attr">age</span>: <span class="built_in">never</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">CleanNever</span> = <span class="title class_">RemoveNever</span>&lt;<span class="title class_">Messi</span>&gt; </span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">  &#123;</span></span><br><span class="line"><span class="comment">    speed: 99,</span></span><br><span class="line"><span class="comment">    shoot: 99,</span></span><br><span class="line"><span class="comment">  &#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
 
-<p>然后我们可以在 index.js 中添加内容</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要从包里导出program对象</span></span><br><span class="line"><span class="keyword">const</span> &#123; program &#125; = <span class="built_in">require</span>(<span class="string">&quot;commander&quot;</span>);</span><br><span class="line"></span><br><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;init&#x27;</span>) <span class="comment">// 配置命令 =&gt; jacky init</span></span><br><span class="line">  .<span class="title function_">option</span>(<span class="string">&#x27;--type &lt;char&gt;&#x27;</span>, <span class="string">&#x27;input your type&#x27;</span>, <span class="string">&#x27;vue&#x27;</span>) <span class="comment">// 配置参数 =&gt; jacky init --type react</span></span><br><span class="line">  .<span class="title function_">action</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res)</span><br><span class="line">    <span class="comment">// &#123; type: &#x27;react&#x27; &#125;</span></span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解析输入的命令参数</span></span><br><span class="line">program.<span class="title function_">parse</span>(process.<span class="property">argv</span>)</span><br></pre></td></tr></table></figure>
+<p>这里需要利用到ts中 keyof 的用法，keyof是用来获取一个类型的键的联合类型，例如</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">Messi</span> = &#123;</span><br><span class="line">  <span class="attr">speed</span>: <span class="number">99</span>,</span><br><span class="line">  <span class="attr">shoot</span>: <span class="number">99</span>,</span><br><span class="line">  <span class="attr">age</span>: <span class="built_in">never</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> keys = keyof <span class="title class_">Messi</span> <span class="comment">// &#x27;speed&#x27; | &#x27;shoot&#x27; | &#x27;age&#x27;</span></span><br></pre></td></tr></table></figure>
 
-<p>commander 包提供了一个 program 的对象，方便我们快速地对命令行内容操作和配置，当然它内部还提供了更强大的功能，有兴趣可以移步官网<br>这里重点介绍program对象</p>
-<ul>
-<li>command方法，定义命令名称，配置后会生成如，<code>jacky init</code>的命令</li>
-<li>option方法，定义命令参数，是针对上述命令完成进一步配置的，可设置多个option，可以接受三个参数<ul>
-<li>参数1，参数名称和类型，必填</li>
-<li>参数2，参数类型说明，可选</li>
-<li>参数3，参数默认值，可选</li>
-</ul>
-</li>
-<li>action方法，在输入完命令后的回调函数，接收的参数就是输入的命令内容组成的对象</li>
-</ul>
-<h4 id="安装inquirer依赖"><a href="#安装inquirer依赖" class="headerlink" title="安装inquirer依赖"></a>安装inquirer依赖</h4><p>inquirer是提供给用户在命令行交互的包，例如询问，输入，选择等多种交互方式</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i inquirer</span><br></pre></td></tr></table></figure>
+<p>如果我们通过 Messi[‘age’] 访问一个类型，得到的是对应的类型值 never，而 never | ‘speed’ 的结果是 ‘speed’，根据这个特性，我们的思路就应该是</p>
+<ol>
+<li>遍历类型的键，如果对应值不为never，则赋值类型值为key本身，如果是never，赋值为never</li>
+<li>第一步之后得到的类型就是除never类型之外的键值对都是一致的，即 key &#x3D;&#x3D; value</li>
+<li>利用 Type[key of type], 获取到所有键对应值的联合类型，但由于never做联合类型后会消失，所以保留了其他键的集合</li>
+<li>利用Pick将上一步得到的键集合筛选出来</li>
+</ol>
+<p>实现如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">RemoveNever</span>&lt;T&gt; = <span class="title class_">Pick</span>&lt;T, &#123;</span><br><span class="line">  [k <span class="keyword">in</span> keyof T]: T[k] <span class="keyword">extends</span> <span class="built_in">never</span> ? <span class="built_in">never</span> : k</span><br><span class="line">&#125;[keyof T]</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
 
-<p>然后我们在index.js 中再添加一条命令，并且加入交互操作</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  .<span class="title function_">action</span>(<span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="title function_">prompt</span>([</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="string">&#x27;input&#x27;</span>, <span class="comment">// 交互类型，输入形式</span></span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;name&#x27;</span>, <span class="comment">// 字段名称</span></span><br><span class="line">        <span class="attr">default</span>: <span class="string">&#x27;jacky cheung&#x27;</span>, <span class="comment">// 默认值</span></span><br><span class="line">        <span class="attr">message</span>: <span class="string">&#x27;please input your name&#x27;</span> <span class="comment">// 交互信息</span></span><br><span class="line">      &#125;</span><br><span class="line">    ])</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;res: &#x27;</span>, res)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="PickPartial-工具类"><a href="#PickPartial-工具类" class="headerlink" title="PickPartial 工具类"></a>PickPartial 工具类</h2><p>实现一个 PickPartial 工具类型，用来获取对象类型中声明的可选属性。具体的使用示例如下所示</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">Person</span> = &#123;</span><br><span class="line">  <span class="attr">id</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">age</span>: <span class="built_in">number</span>;</span><br><span class="line">  <span class="keyword">from</span>?: <span class="built_in">string</span>;</span><br><span class="line">  speak?: <span class="built_in">string</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">PickPartial</span>&lt;T&gt; = <span class="comment">// 你的实现代码</span></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">PersonOptionalKeys</span> = <span class="title class_">PickPartial</span>&lt;<span class="title class_">Person</span>&gt; <span class="comment">// &quot;from&quot; | &quot;speak&quot;</span></span><br></pre></td></tr></table></figure>
 
-<p>然后我们敲下 <code>jacky create</code>, 终端会出现提示，然后我们输入一些内容，看看会是什么现象</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PS D:\JackyProgram\jacky-cli&gt; jacky create    </span><br><span class="line">? please input your name jacky cheung</span><br><span class="line">res:  &#123; name: &#x27;jacky cheung&#x27; &#125;</span><br></pre></td></tr></table></figure>
+<p>这里需要一个技巧点，当一个属性是可选的，那么这个属性的类型是声明类型 | undefined，那么就可以根据这个特点，判断undefined是否继承该类型值</p>
+<ol>
+<li>遍历对象类型，判断 undefined extends 每一个键值类型</li>
+<li>如果是，则赋值为键key本身，并强制赋值为必选属性 -?</li>
+<li>否则，赋值为never</li>
+<li>此时得到的新类型是，原可选类型一律赋值为key本身且必选，原必选类型全为never</li>
+<li>继续利用 {}[keyof T]，过滤掉never，得到就是原可选键集合</li>
+</ol>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">PickPartial</span>&lt;T&gt; = &#123;</span><br><span class="line">  [k <span class="keyword">in</span> keyof T]-?: <span class="literal">undefined</span> <span class="keyword">extends</span> T[k]</span><br><span class="line">    ? T[k] <span class="keyword">extends</span> <span class="literal">undefined</span></span><br><span class="line">      ? <span class="built_in">never</span></span><br><span class="line">      : k</span><br><span class="line">    : <span class="built_in">never</span></span><br><span class="line">&#125;[keyof T]</span><br></pre></td></tr></table></figure>
 
-<p>打印的结果就是，将prompt配置的字段整合为一个对象，当然这里介绍的都是基本操作，更多的api请参考官网，这里是做铺垫为了后面的项目</p>
-<p>propmt接受的是一个数组，也就是询问的条数</p>
-<ul>
-<li>type，交互类型，如 input, confirm, checkbox, list, number, password等</li>
-<li>name，字段名称，也就是最终prompt的返回的结果，由这些字段组装而成</li>
-<li>default，字段默认值，如果直接按回车，就以该值作为输入值</li>
-<li>message，交互提示说明文字，在交互时会给予提示</li>
-</ul>
-<p>prompt本身返回一个promise，所以你可以使用 <code>async/await</code>，也可以使用 <code>.then</code> 形式做后续操作。</p>
-<h2 id="实现Git规范"><a href="#实现Git规范" class="headerlink" title="实现Git规范"></a>实现Git规范</h2><p>前面的内容已经介绍了如何完成简单的cli，并且能够处理命令和交互，这一节我们讨论如何利用cli实现对git方面的提交约束</p>
-<h3 id="jacky-git-命令"><a href="#jacky-git-命令" class="headerlink" title="jacky git 命令"></a>jacky git 命令</h3><p>我们期望有这样一个命令，<code>jacky git</code>，然后通过参数，完成对git规范的配置，配置git规范的流程见另一篇文章<br><a href="/2022/10/01/commit-lint-steps/">git提交规范定制流程</a></p>
+<blockquote>
+<p>但这样还是会有一个小问题，如果某个值是可选，但类型为undefined，此时是无法将这个k给选出来的，但这样声明是毫无意义的，所以忽略</p>
+</blockquote>
 ]]></content>
       <categories>
         <category>web</category>
       </categories>
       <tags>
-        <tag>node.js</tag>
-        <tag>cli</tag>
+        <tag>js</tag>
+        <tag>ts</tag>
       </tags>
   </entry>
   <entry>
@@ -449,6 +499,89 @@
       <tags>
         <tag>js</tag>
         <tag>ts</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Vite 性能优化</title>
+    <url>/2022/09/29/vite/</url>
+    <content><![CDATA[<h2 id="压缩方式"><a href="#压缩方式" class="headerlink" title="压缩方式"></a>压缩方式</h2><p>使用 <a href="https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md">vite-plugin-compression</a> 插件，该插件可以将源码资源根据配置需求进行压缩，生成gz压缩文件，在服务端传送方面提高效率，同时服务端在收到客户端请求的时候，也可以选择这些已经上传好了的gz文件，返回给浏览器自行解压。</p>
+<h3 id="使用方式如下"><a href="#使用方式如下" class="headerlink" title="使用方式如下"></a>使用方式如下</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add vite-plugin-compression -D</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> viteCompression <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-compression&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">viteCompression</span>(&#123;</span><br><span class="line">      <span class="attr">verbose</span>: <span class="literal">true</span>, <span class="comment">// 是否在控制台输出压缩日志</span></span><br><span class="line">      <span class="title function_">filter</span>(<span class="params">file</span>) &#123; <span class="comment">// 筛选哪些需要压缩的文件</span></span><br><span class="line">        <span class="comment">// 忽略css文件</span></span><br><span class="line">        <span class="keyword">return</span> !file.<span class="title function_">endsWith</span>(<span class="string">&#x27;.css&#x27;</span>)</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">threshold</span>: <span class="number">50</span> * <span class="number">1024</span>, <span class="comment">// 压缩阈值，大于设定值需要压缩</span></span><br><span class="line">      <span class="attr">deleteOriginFile</span>: <span class="literal">false</span>, <span class="comment">// 压缩后是否删除源文件</span></span><br><span class="line">      <span class="attr">disable</span>: <span class="literal">false</span>, <span class="comment">// 是否禁用该插件</span></span><br><span class="line">      <span class="attr">ext</span>: <span class="string">&#x27;.gz&#x27;</span>, <span class="comment">// 压缩文件的后缀名</span></span><br><span class="line">      <span class="attr">algorithm</span>: <span class="string">&#x27;gzip&#x27;</span> <span class="comment">// 压缩算法，可选值参考文档</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="打包分析工具"><a href="#打包分析工具" class="headerlink" title="打包分析工具"></a>打包分析工具</h2><p>安装 <a href="https://github.com/btd/rollup-plugin-visualizer">rollup-plugin-visualizer</a>, 这是一款rollup打包分析插件，因为 vite 本身在构建阶段采用的就是 rollup，所以这个插件是依赖 rollup 的，大家不要与 webpack 打包的分析插件搞混淆了。</p>
+<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add rollup-plugin-visualizer -D</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 该插件在打包时生效，并且在构建结束后，在根目录下默认生成states.html，打开这个html可以看到各种产物的情况</span></span><br><span class="line"><span class="keyword">import</span> &#123; visualizer &#125; <span class="keyword">from</span> <span class="string">&#x27;rollup-plugin-visualizer&#x27;</span></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">visualizer</span>(&#123;</span><br><span class="line">      <span class="attr">filename</span>: <span class="string">&#x27;data.html&#x27;</span>, <span class="comment">// 分析文件的文件名，默认states.html</span></span><br><span class="line">      <span class="attr">open</span>: <span class="literal">true</span>, <span class="comment">// 是否构建后自动打开分析的html</span></span><br><span class="line">      <span class="attr">template</span>: <span class="string">&#x27;treemap&#x27;</span>, <span class="comment">// 分析模板，默认就是treemap也是最直观的，可选值见文档</span></span><br><span class="line">      <span class="comment">// ...其实默认调用visualizer函数就够了，具体的options配置可以参考文档根据自身需求来配置</span></span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="第三方库用CDN方式引入"><a href="#第三方库用CDN方式引入" class="headerlink" title="第三方库用CDN方式引入"></a>第三方库用CDN方式引入</h2><p>在开发过程中，我们经常会引入一些第三方库，如 vue，但如果将其在构建阶段一并打包到产物中，那么体积可想而知，这时我们可以采用适当的CDN技术手段，将这些第三方库用 script 标签的形式从 CDN 引入，这样做的好处是，第一，构建产物体积减小了，效率方面有提高，第二，CDN可以缓存，第二次请求资源的时候，会利用强缓存或协商缓存，节约请求时间和资源。</p>
+<h3 id="安装-vite-plugin-cdn-import"><a href="#安装-vite-plugin-cdn-import" class="headerlink" title="安装 vite-plugin-cdn-import"></a>安装 <a href="https://github.com/mmf-fe/vite-plugin-cdn-import#readme">vite-plugin-cdn-import</a></h3><h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn add vite-plugin-cdn-import -D</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> importToCDN, &#123; autoComplete &#125; <span class="keyword">from</span> <span class="string">&#x27;vite-plugin-cdn-import&#x27;</span></span><br><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="attr">plugin</span>: [</span><br><span class="line">    <span class="title function_">importToCDN</span>(&#123;</span><br><span class="line">      <span class="attr">modules</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">name</span>: <span class="string">&#x27;react&#x27;</span>, <span class="comment">// 你要cdn形式的三方包名</span></span><br><span class="line">          <span class="attr">var</span>: <span class="string">&#x27;React&#x27;</span>, <span class="comment">// 该包暴露在全局的名称</span></span><br><span class="line">          <span class="attr">path</span>: <span class="string">`umd/react.production.min.js`</span>, <span class="comment">// 第三方CDN链接路径，可以是你自己的服务器上的路径</span></span><br><span class="line">          <span class="comment">// ...更多配置参考文档</span></span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 上面这种方式适合自己灵活配置要求的开发人员，拥有自己的服务器，可以将源代码部署到上面的，因为你不知道开源的CDN资源什么时候会挂掉，但配置比较麻烦，如果你对自定义配置要求不多，可以考虑使用自动导入的方式，如下</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">importToCDN</span>(&#123;</span><br><span class="line">  <span class="attr">modules</span>: [</span><br><span class="line">    <span class="title function_">autoComplete</span>(<span class="string">&#x27;vue&#x27;</span>),</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这种方式，会自动从你开发版本，也就是package.json中的版本号为准，然后生成对应的CDN链接的script标签</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>当你使用了该插件，那么对应的第三方库，就不会打包到最终的产物里面</p>
+</blockquote>
+<h2 id="构建配置选项-build-options"><a href="#构建配置选项-build-options" class="headerlink" title="构建配置选项 build options"></a>构建配置选项 build options</h2><h3 id="assetsInlineLimit"><a href="#assetsInlineLimit" class="headerlink" title="assetsInlineLimit"></a>assetsInlineLimit</h3><ul>
+<li>类型 number</li>
+<li>默认值 4096 （4kb）</li>
+</ul>
+<p>小于此阈值的导入或引用资源将内联为 base64 编码，以避免额外的 http 请求。设置为 0 可以完全禁用此项</p>
+<h3 id="cssCodeSplit"><a href="#cssCodeSplit" class="headerlink" title="cssCodeSplit"></a>cssCodeSplit</h3><ul>
+<li>类型 boolean</li>
+<li>默认值 true</li>
+</ul>
+<p>启用&#x2F;禁用 CSS 代码拆分。当启用时，在异步 chunk 中导入的 CSS 将内联到异步 chunk 本身，并在其被加载时插入。</p>
+<p>如果禁用，整个项目中的所有 CSS 将被提取到一个 CSS 文件中。</p>
+<h3 id="sourcemap"><a href="#sourcemap" class="headerlink" title="sourcemap"></a>sourcemap</h3><ul>
+<li>类型 boolean</li>
+<li>默认值 false</li>
+</ul>
+<p>是否开启源码映射，关闭后将不会生成 .map 文件，体积将会大幅减少，但根据实际情况，看你是否希望在生产环境定位问题。</p>
+<h3 id="chunkSizeWarningLimit"><a href="#chunkSizeWarningLimit" class="headerlink" title="chunkSizeWarningLimit"></a>chunkSizeWarningLimit</h3><ul>
+<li>类型 number</li>
+<li>默认值 500 （500kb）</li>
+</ul>
+<p>当chunk的大小高于设定值后，触发警告，能够帮助你知道哪些chunk应该进一步拆分</p>
+<h3 id="terserOptions"><a href="#terserOptions" class="headerlink" title="terserOptions"></a>terserOptions</h3><p>该配置主要是利用 terser 的打包模式，vite 默认采用的是 esBuild，所以使用 terser 模式，需要将 minify 配置为 terser，然后做进一步操作</p>
+<ul>
+<li>将开发环境下的log，debugger去除</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="attr">terserOptions</span>: &#123;</span><br><span class="line">  <span class="attr">compress</span>: &#123;</span><br><span class="line">    <span class="string">&#x27;drop_console&#x27;</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="string">&#x27;drop_debugger&#x27;</span>: <span class="literal">true</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>除此之外，terser还提供众多可以配置的构建选项，参看 <a href="https://terser.org/">https://terser.org/</a></p>
+<h3 id="模块分割（模块联邦）"><a href="#模块分割（模块联邦）" class="headerlink" title="模块分割（模块联邦）"></a>模块分割（模块联邦）</h3><p>在不使用 CDN 情况下，我们依然需要将第三方包进行build，想想一下，如果你的入口js引入了vue，pinia，router这些，那么你在build之后会发现这些三方库全部被整合到了一个js文件中，导致体积过大，那么此时应该用到的就是模块分割</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 和前面一样，该配置属于rollup底层配置，需要写在rollupOptions对象中</span></span><br><span class="line"><span class="comment">// 示例就是将项目中的包，按照功能拆分出独立的模块，或者将一系列相关的功能包，合并到一个模块组合</span></span><br><span class="line"><span class="attr">rollupOptions</span>: &#123;</span><br><span class="line">  <span class="attr">manualChunks</span>: &#123;</span><br><span class="line">    <span class="attr">axios</span>: [<span class="string">&#x27;axios&#x27;</span>],</span><br><span class="line">    <span class="attr">jQuery</span>: [<span class="string">&#x27;jquery&#x27;</span>],</span><br><span class="line">    <span class="comment">// vue + pinia + router属于vue生态链，所以单独合成一个模块</span></span><br><span class="line">    <span class="attr">vue</span>: [<span class="string">&#x27;vue&#x27;</span>, <span class="string">&#x27;pinia&#x27;</span>, <span class="string">&#x27;vue-router&#x27;</span>]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用环境变量"><a href="#使用环境变量" class="headerlink" title="使用环境变量"></a>使用环境变量</h3><p>和 webpack 一样，vite 也可以通过配置环境变量来区分逻辑走向，例如 dev 环境用的 api 地址是 <code>http://test.api.com</code>,<br>而生产环境用的是 <code>http://prod.api.com</code>, 那么在使用这个变量就需要做区分，而与 webpack 不同的是，vite 并没有采用 <code>process.env.NODE_ENV</code>，而是使用 esModule 中的 <code>import.meta</code>来识别，具体如下</p>
+<p>首先在根目录下创建 <code>.env</code> 文件, 添加环境变量，注意以 <code>VITE_</code>开头</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">VITE_name = jacky</span><br></pre></td></tr></table></figure>
+
+<p>然后在任意 <code>.js</code> 文件中尝试打印 <code>import.meta.env</code></p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">BASE_URL<span class="punctuation">:</span> <span class="string">&quot;/&quot;</span></span><br><span class="line">DEV<span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">MODE<span class="punctuation">:</span> <span class="string">&quot;development&quot;</span></span><br><span class="line">PROD<span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span></span><br><span class="line">SSR<span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span></span><br><span class="line">VITE_name<span class="punctuation">:</span> <span class="string">&quot;jacky&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以发现配置在 env 文件中的变量已经生效，需要注意一下几点</p>
+<ol>
+<li>mode 可自由设置</li>
+<li>环境变量前缀可自由设置</li>
+<li>vite 通过mode，来寻找对应env文件</li>
+</ol>
+<p>例如，如果 package.json 中 script 命令行中的设置</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">dev<span class="punctuation">:</span> vite --mode dev</span><br></pre></td></tr></table></figure>
+
+<p>那么在运行中，vite会尝试寻找根目录下的 <code>.env.dev</code> 文件，后缀就是 –mode 后要跟的内容，如果是<code>.env.prod</code>文件，则需要把 –mode 设置为 prod。</p>
+<p>如果需要自定义环境变量前缀，需要在 <code>vite.config.js</code> 中设置 <code>envPrefix</code>: <code>your_custom_profixer</code>，然后在 env 文件中就以此为变量前缀</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title function_">defineConfig</span>(&#123;</span><br><span class="line">  <span class="comment">// ....</span></span><br><span class="line">  <span class="attr">envPrefix</span>: <span class="string">&#x27;jc&#x27;</span>, <span class="comment">//环境变量以jc开头</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>env文件中设置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">jc_name = 100</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>js</tag>
+        <tag>vite</tag>
       </tags>
   </entry>
 </search>
