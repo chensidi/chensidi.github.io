@@ -1,6 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Javascript红宝书重点记录《基础类型篇》</title>
+    <url>/2022/11/08/base-type/</url>
+    <content><![CDATA[<h2 id="Symbol类型"><a href="#Symbol类型" class="headerlink" title="Symbol类型"></a>Symbol类型</h2><p>Symbol是es6中新增的一种基本数据类型，也可以读成“符号”，其特点如下</p>
+<ol>
+<li><p>不重复性，js中字符串，数字，和对象可以做到完全相等，但Symbol是不存在一模一样的两个值的，即便是 <code>Symbol() == Symbol()</code> 也是false，基于这个特点，当对象的属性为Symbol类型时，是不用担心某些属性会被覆盖的</p>
+</li>
+<li><p>不能使用 new 操作符，Symbol只能用做普通函数调用，当然可以用它的 call，apply，bind</p>
+</li>
+<li><p>可以全局注册Symbol，当采用普通函数调用时，Symbol得到的只是局部的符号值，下一次再调用时会重新注册，但Symbol提供了全局注册方法，<code>Symbol.for</code>，如果全局没有注册，则分配一个内存空间赋予首次的Symbol，下次再此注册时会直接使用内存中的值，所以在这种情况下，就能够得到两个完全相同的Symbol，这与第一点是有区别的，例如</p>
+ <figure class="highlight js"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> s = <span class="title class_">Symbol</span>.<span class="title function_">for</span>(<span class="number">1</span>) <span class="comment">// 首次注册</span></span><br><span class="line"><span class="keyword">const</span> ss = <span class="title class_">Symbol</span>.<span class="title function_">for</span>(<span class="number">1</span>) <span class="comment">// 从注册表中获取</span></span><br><span class="line">ss === s <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+
+<p> Symbol还提供了与for对应的一个方法，keyFor，这是用来获取传入for参数的方法，因为使用for方法，传入的参数最终都会转换为string类型，所以通过keyFor得到的数据，也都是string，当然如果调用for时没有传，那keyFor得到的也就是undefined</p>
+ <figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> sy = <span class="title class_">Symbol</span>.<span class="title function_">for</span>(<span class="literal">true</span>)</span><br><span class="line"><span class="title class_">Symbol</span>.<span class="title function_">keyFor</span>(sy) <span class="comment">// &#x27;true&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>keyFor只能接受Symbol类型，其余类型一概报错</p>
+</blockquote>
+</li>
+<li><p>Symbol函数是接受参数的，该参数是作为该Symbol值的描述，为以后寻找该Symbol提供了追踪依据，参数一般传入的是字符串类型，但实际上能接受任何类型，只不过传入的类型最终都会变成字符串类型，例如数字，布尔会转成字符串，对象类型，会调用其<code>toString</code>方法，返回的结果作为Symbol入参的最终结果</p>
+</li>
+<li><p>Symbol.toPrimitive，当一个对象存在该属性时，如果该对象作隐式类型转换，会优先调用该方法，它的存在使得优先级高于<code>valueOf</code> 和 <code>toString</code>，需要注意，这个属性值必须是函数</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;</span><br><span class="line">  [<span class="title class_">Symbol</span>.<span class="property">toPrimitive</span>](type) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(type)</span><br><span class="line">    <span class="keyword">switch</span> (type) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;string&#x27;</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;messi&#x27;</span></span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;number&#x27;</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="number">35</span></span><br><span class="line">      <span class="attr">default</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;🏆&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">obj + <span class="number">1</span> <span class="comment">// 打印default，+ 运算可以是数字，也可以是字符串不明确，所以为default类型</span></span><br><span class="line">obj * <span class="number">1</span> <span class="comment">// 打印number，因为作数学运算需要转化为number</span></span><br><span class="line"><span class="title class_">Symbol</span>(obj) <span class="comment">// 打印string，Symbol的入参需要转换为string类型</span></span><br></pre></td></tr></table></figure>
+
+<p>也即是说，Symbol.toPrimitive对应的方法，接受的参数类型，是取决于作隐式转换时需要被转换成的数据类型，如果该对象没有这个属性，才去找有没有 <code>valueOf</code> 和 <code>toString</code> 方法</p>
+</li>
+</ol>
+<h2 id="Number类型"><a href="#Number类型" class="headerlink" title="Number类型"></a>Number类型</h2><p>Number 是js中很常见的类型之一，这里主要列举其容易混淆模糊的概念，数值转换，当Number构造函数传入一个值的时候，会进行数值转换得到一个Number类型的结果，以下是其转换特点总结</p>
+<ol>
+<li>布尔类型，true -&gt; 1, false -&gt; 0</li>
+<li>空字符串及全空格字符串，转换结果为0</li>
+<li>字符串前后导空格会忽略，从第一个非空字符开始尝试转换</li>
+<li>如果第一个非空字符串是 ‘+’, ‘-‘, 数字其中的一种，Number会尝试继续转换，否则直接返回NaN</li>
+<li>如果开头以 ‘0x’ 开头，则尝试以16进制作为识别，转换为10进制数，如果’0x’后接的内容不符合16进制格式，则返回NaN</li>
+<li>‘+’, ‘-‘ 不能结合 ‘0x’, 也就是说正负符号只对10进制有效，和16进制搭配结果反而是NaN</li>
+<li>如果传入是对象，则按照隐式类型转换后得到的结果作为Number的入参</li>
+<li>如果第一个有效字符为0（注意不是0x），则尝试以10进制转换，并忽略前面的所有0，前导0不能和0x搭配，否则返回NaN</li>
+<li>其余情况均为NaN</li>
+</ol>
+<p>示例如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title class_">Number</span>(<span class="literal">true</span>) <span class="comment">// 1</span></span><br><span class="line"><span class="title class_">Number</span>(<span class="string">&#x27;     &#x27;</span>) <span class="comment">// 0</span></span><br><span class="line"><span class="title class_">Number</span>(<span class="string">&#x27;     1.2&#x27;</span>) <span class="comment">// 1.2</span></span><br><span class="line"><span class="title class_">Number</span>(<span class="string">&#x27;  +5&#x27;</span>) <span class="comment">// 5</span></span><br><span class="line"><span class="title class_">Number</span>(<span class="string">&#x27;0x11  &#x27;</span>) <span class="comment">// 17</span></span><br><span class="line"><span class="title class_">Number</span>(<span class="string">&#x27;  007  &#x27;</span>) <span class="comment">// 7</span></span><br><span class="line"><span class="title class_">Number</span>(<span class="string">&#x27;000x11&#x27;</span>) <span class="comment">// NaN</span></span><br><span class="line"><span class="title class_">Number</span>(<span class="string">&#x27;  -0x1 &#x27;</span>) <span class="comment">// NaN</span></span><br></pre></td></tr></table></figure>
+
+<p>es 中还有另外2种数组转换方法，parseInt, parseFloat，其中 parseInt 是更常用的将字符串转换为 Number 类型的方法，其特点总结如下</p>
+<ol>
+<li>总是尝试将字符串转换为10进制整数</li>
+<li>空字符及全空格字符串转换为NaN （Number中则是0）</li>
+<li>前导空格忽略，从第一个非空字符开始（和Number很像），如果遇到非’+’,’-‘,数字开头，立即返回NaN</li>
+<li>从第一个有效字符开始，一位一位往后走，直到遇到非数字字符或结束为止，也就是说截取字符串开头部分最长有效数字子串</li>
+<li>忽略前导所有0（和Number一样）</li>
+<li>正负号是可以搭配0x开头的16进制（与Number相反）</li>
+<li>0开头不能与0x搭配（与Number相同）</li>
+<li>0x开头会尝试识别为16进制</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27;   &#x27;</span>) <span class="comment">// NaN</span></span><br><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27; messi &#x27;</span>) <span class="comment">// NaN</span></span><br><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27; 666 messi &#x27;</span>) <span class="comment">// 666</span></span><br><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27; 007 &#x27;</span>) <span class="comment">// 7</span></span><br><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27; -0x11 &#x27;</span>) <span class="comment">// -17 </span></span><br></pre></td></tr></table></figure>
+
+<p>parseInt还可以接受第二个参数，也就是底数，说直接点就是明确告诉你，传入的字符串是什么进制的数，然后将该进制转换为10进制</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27;11&#x27;</span>, <span class="number">2</span>) <span class="comment">// 2进制的11，转为10进制后是 3</span></span><br><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27;12&#x27;</span>, <span class="number">0</span>) <span class="comment">// 0进制没有意义，得到的依然是10进制结果12</span></span><br><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27;&#x27;</span>, <span class="number">1</span>) <span class="comment">// 1进制的世界全部都是0，所以1为底数得到的全为NaN</span></span><br><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27;11&#x27;</span>, <span class="number">3.2</span>) <span class="comment">// 当底数为小数时，取整数部分，也就是3，3进制11转换10进制得到结果是 4</span></span><br><span class="line"><span class="built_in">parseInt</span>(<span class="string">&#x27;11&#x27;</span>, <span class="string">&#x27; 0x11&#x27;</span>) <span class="comment">// 底数也可以是string类型，那么先将底数作parseInt转换，然后再处理第一个参数， 0x11 -&gt; 17， parseInt(&#x27;11&#x27;, 17), 结果为18</span></span><br></pre></td></tr></table></figure>
+
+<p>parseFloat则是用来解析小数的，其特点汇总如下</p>
+<ol>
+<li>只解析10进制</li>
+<li>不能指定底数（可以传，但没用，不会报错）</li>
+<li>从左到右，尝试解析浮点数据字符（数字和正负号和小数点），直到遇到非浮点类型字符为止或结束</li>
+<li>如果第二次遇到小数点，也立即结束，返回前面的内容</li>
+<li>正负号可以参与识别</li>
+<li>如果筛选出来的浮点字符串末尾有0，则忽略全部结尾的0</li>
+<li>其余与parseInt一致</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">parseFloat</span>(<span class="string">&#x27;0x1&#x27;</span>) <span class="comment">// 0, 不能解析16进制，所以识别到0就结束了</span></span><br><span class="line"><span class="built_in">parseFloat</span>(<span class="string">&#x27;1.1a&#x27;</span>) <span class="comment">// 1.1</span></span><br><span class="line"><span class="built_in">parseFloat</span>(<span class="string">&#x27;1.200messi&#x27;</span>) <span class="comment">// 先识别到&#x27;1.200&#x27;，然后忽略结尾0，结果为1.2</span></span><br><span class="line"><span class="built_in">parseFloat</span>(<span class="string">&#x27;1.301.222&#x27;</span>) <span class="comment">// 1.301，第二个小数点结束</span></span><br><span class="line"><span class="built_in">parseFloat</span>(<span class="string">&#x27;10.2e3&#x27;</span>) <span class="comment">// 科学计数法， 10.2 * (10 ** 3) </span></span><br></pre></td></tr></table></figure>
+
+<p>Number的prototype上具有自己的toString方法，功能是将10进制数值转换为目标进制，例如</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">(<span class="number">10</span>).<span class="title function_">toString</span>(<span class="number">2</span>) <span class="comment">// 1010</span></span><br><span class="line">(<span class="number">10</span>).<span class="title function_">toString</span>(<span class="number">2.5</span>) <span class="comment">// 2.5取整数部分 -&gt; 1010</span></span><br><span class="line">(<span class="number">10</span>).<span class="title function_">toString</span>(<span class="number">100</span>) <span class="comment">// 报错，进制只能在2-36闭区间之间</span></span><br><span class="line">(<span class="number">10</span>).<span class="title function_">toString</span>(<span class="string">&#x27;3.4&#x27;</span>) <span class="comment">// &#x27;3.4&#x27;转数字后取整，-&gt; 101</span></span><br><span class="line">(<span class="number">10</span>).<span class="title function_">toString</span>(object) <span class="comment">// object隐式转换为原始类型后，再转数字类型作为进制数</span></span><br></pre></td></tr></table></figure>
+
+<p>Number的toString方法得到的是字符串.</p>
+<h2 id="String类型"><a href="#String类型" class="headerlink" title="String类型"></a>String类型</h2><p>字符串类型是js最常用的类型之一，其常用api有slice，substr，substring等，但这几个api却有比较独特的地方</p>
+<ol>
+<li><p>slice，这个方法接受两个参数startIndex，endIndex，其目的是从字符串中截取start到end中间的一段，但里面仍有值得研究的细节</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> str = <span class="string">&#x27;jacky cheung&#x27;</span></span><br><span class="line">str.<span class="title function_">slice</span>(<span class="number">1</span>, <span class="number">3</span>) <span class="comment">// &#x27;ac&#x27;</span></span><br><span class="line">str.<span class="title function_">slice</span>(<span class="number">1</span>) <span class="comment">// &#x27;acky cheung&#x27;</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">上面两种应该是大多数人对slice的认知和使用</span></span><br><span class="line"><span class="comment">但如果传入的索引为负数或者越界了怎么办</span></span><br><span class="line"><span class="comment">如果传入的start &gt; end 又会怎么样</span></span><br><span class="line"><span class="comment">如果传入的参数不是数字类型，或者不能有效转换为数字又该如何</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">str.<span class="title function_">slice</span>(-<span class="number">2</span>) <span class="comment">// &#x27;g&#x27; 在红宝书中是这么解释的，当为负数时，会将该负数加上字符串长度length后最为新的索引，所以就是倒数第二位至最后一位，</span></span><br><span class="line">str.<span class="title function_">slice</span>(-<span class="number">3</span>, -<span class="number">1</span>) <span class="comment">// 负数加上length后-&gt;str.slice(9, 11)，结果为&#x27;un&#x27;，就是倒数第三位至倒数第一位，左闭右开</span></span><br><span class="line">str.<span class="title function_">slice</span>(-<span class="number">15</span>) <span class="comment">// 如果发现负数加上length后依然为负数，则直接视为0，所以结果为 str.slice(0)</span></span><br><span class="line">str.<span class="title function_">slice</span>(<span class="number">3</span>, <span class="number">1</span>) <span class="comment">// 如果起始索引大于结束索引，得到的结果为 &#x27;&#x27;</span></span><br><span class="line">str.<span class="title function_">slice</span>(<span class="number">1.3</span>) <span class="comment">// 小数则取整数部分,实际上是str.slice(1)</span></span><br><span class="line">str.<span class="title function_">slice</span>(<span class="string">&#x27;2.3&#x27;</span>) <span class="comment">// 字符串转数字后取整数部分，str.slice(2)</span></span><br><span class="line">str.<span class="title function_">slice</span>(<span class="string">&#x27;messi&#x27;</span>) <span class="comment">// &#x27;messi&#x27; 无法转换为数字，则视为0 -&gt; str.slice(0)</span></span><br><span class="line">str.<span class="title function_">slice</span>(<span class="string">&#x27;messi&#x27;</span>, <span class="number">100</span>) <span class="comment">// messi索引视为0，结束位置索引100大于总字符串长度所以视为最大长度，str.slice(0, 12)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>substr，该方法接受2个参数，startIndex，length, 目的是从开始索引位，向后取多少位</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> str = <span class="string">&#x27;jacky&#x27;</span></span><br><span class="line">str.<span class="title function_">substr</span>(<span class="number">1</span>) <span class="comment">// 不传第二位，默认从索引1开始取到结束, &#x27;acky&#x27;</span></span><br><span class="line">str.<span class="title function_">substr</span>(<span class="number">1</span>, <span class="number">2</span>) <span class="comment">// 这是最常见的，从索引1向后取2位，&#x27;ac&#x27;</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">如果遇到负数，越界又会怎样？</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">str.<span class="title function_">substr</span>(-<span class="number">2</span>, <span class="number">1</span>) <span class="comment">// 在红宝书中写道，substr第一个参数遇到负数，则视为长度加负数，也就是倒数第几位，所以是str.substr(1, 1)</span></span><br><span class="line">str.<span class="title function_">substr</span>(<span class="number">1</span>, -<span class="number">1</span>) <span class="comment">// 如果第二位参数遇到负数，则视为0，str.substr(1, 0), 在这种情况下返回值为 &#x27;&#x27;, 因为取0长度，和第一位没有关系了</span></span><br><span class="line">str.<span class="title function_">substr</span>(<span class="number">10</span>) <span class="comment">// 如果第一位参数出现越界情况，则得到空字符串</span></span><br><span class="line">str.<span class="title function_">substr</span>(<span class="number">2</span>, <span class="number">10</span>) <span class="comment">// 如果第二位参数出现越界，则视为取到字符串结束，str.substr(2)</span></span><br><span class="line"><span class="comment">// 其余遇到参数为字符串或对象情况，和slice一样，处理为数字类型的再作计算</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>substring，该方法接受2个参数，firstIndex, secondIndex，其目的是获取两个索引间的那一段字串，这个方法和slice有点类似，这也是很多初学者容易混淆的地方，这里的两个参数不一定非得谁比谁大，它们起的作用是得到一段左闭右开的区间即可</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> str = <span class="string">&#x27;jacky&#x27;</span></span><br><span class="line">str.<span class="title function_">substring</span>(<span class="number">1</span>, <span class="number">3</span>) <span class="comment">// 这是最常见的，从第一位索引到第三位，左闭右开，结果是 &#x27;ac&#x27;</span></span><br><span class="line">str.<span class="title function_">substring</span>(<span class="number">3</span>, <span class="number">1</span>) <span class="comment">// 这和上面得到的结果是一样的，两位参数起到的作用仅仅是确定哪端区间，大小关系并不影响</span></span><br><span class="line">str.<span class="title function_">substring</span>(<span class="number">1</span>) <span class="comment">// 从第一位起，取到末尾 &#x27;acky&#x27;</span></span><br><span class="line">str.<span class="title function_">substring</span>(-<span class="number">2</span>) <span class="comment">// 任一参数遇到负数，substring一律视为0 -&gt; str.substring(0)</span></span><br><span class="line">str.<span class="title function_">substring</span>(<span class="number">2</span>, -<span class="number">100</span>) <span class="comment">// 转换为str.substring(2, 0) -&gt; &#x27;ja&#x27;</span></span><br><span class="line">str.<span class="title function_">substring</span>(<span class="number">100</span>) <span class="comment">// 任一参数大于长度，则视为末尾</span></span><br><span class="line">str.<span class="title function_">substring</span>(<span class="string">&#x27;messi&#x27;</span>) <span class="comment">// 不能转换为数字类型的参数，也视为0</span></span><br><span class="line"><span class="comment">// 其余遇到参数为字符串，对象等非数字类型，均与前面介绍的流程一致，先转换后计算</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="比较运算-“-gt-”-“-lt-”"><a href="#比较运算-“-gt-”-“-lt-”" class="headerlink" title="比较运算 “&gt;” “&lt;”"></a>比较运算 “&gt;” “&lt;”</h2><p>在js中，两个值的比较运算是很常见的，但很多人仅仅将其视为数字类型的大小比较，这只是其中的一方面，更多的比较原则归纳如下</p>
+<ol>
+<li>两个值均为数字类型，则直接比较数学上的大小即可</li>
+<li>两个值均为字符串类型，则按照字符串索引顺序，则尝试逐个比较其字符串对应码值大小</li>
+</ol>
+   <figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="string">&#x27;jacky&#x27;</span> &gt; <span class="string">&#x27;messi&#x27;</span> <span class="comment">// &#x27;j&#x27; 对应码值 106 &#x27;m&#x27; 对应码值 109 所以第一个索引位比较就能比出大小，故停止比较返回false</span></span><br><span class="line"><span class="string">&#x27;jacky&#x27;</span> &gt; <span class="string">&#x27;jj&#x27;</span> <span class="comment">// 第一个索引位相同，则比较第二位，&#x27;a&#x27; &lt; &#x27;j&#x27; 所以停止比较返回false</span></span><br><span class="line"><span class="string">&#x27;abc&#x27;</span> &gt; <span class="string">&#x27;ab&#x27;</span> <span class="comment">// 前2位都相同，但后者没有第三位，所以前者大于后者</span></span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>两个值其中一个是数字，另一个非数字，则非数字通过Number函数后转换为数字后，再做比较</li>
+<li>两个值存在对象类型，则转为原始类型后比较</li>
+</ol>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>js</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ts声明文件</title>
+    <url>/2022/10/16/ts-declare/</url>
+    <content><![CDATA[<h2 id="d-ts介绍"><a href="#d-ts介绍" class="headerlink" title=".d.ts介绍"></a>.d.ts介绍</h2><p>.d.ts 一个作用是提供给js开发者，尤其是库的开发中，声明变量类型用的，因为在用js编写的代码中，是没有类型而言的，所以如果ts项目中，又引入了这些js文件，那么在使用中是肯定会报错的，看个例子</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// func.js</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min, max</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> min + (max - min) * <span class="title class_">Math</span>.<span class="title function_">random</span>()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; getRandom &#125; <span class="keyword">from</span> <span class="string">&#x27;./utils/func&#x27;</span> <span class="comment">// 无法找到模块“./utils/func”的声明文件。“func.js”隐式拥有 &quot;any&quot; 类型。ts(7016)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> res = <span class="title function_">getRandom</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这里直接在引用的时候就直接报错了，因为ts根本就识别不了这个js文件模块，那么这种情况就需要去写一个同名的 <code>func.d.ts</code>去实现</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// func.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min: <span class="built_in">number</span>, max: <span class="built_in">number</span></span>): <span class="built_in">number</span></span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个文件的位置无所谓，ts会在项目中扫码，直到找到这个.d.ts为止，所以放在哪都行</p>
+<h2 id="为外部js模块添加类型"><a href="#为外部js模块添加类型" class="headerlink" title="为外部js模块添加类型"></a>为外部js模块添加类型</h2><p>比如当你的项目中引入了 <code>demo.js</code>，这个js文件是从npm上下载的，但开发人员当初在编写代码时是使用的纯js，而你的项目是使用ts的，所以当你从这个库里面导入某些方法或变量时，ts会提示你没有这个模块，示例如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; ajax &#125; <span class="keyword">from</span> <span class="string">&#x27;jQuery&#x27;</span> <span class="comment">// 无法找到模块“jQuery”的声明文件。“/node_modules/jQuery/dist/jquery.js”隐式拥有 &quot;any&quot; 类型。</span></span><br></pre></td></tr></table></figure>
+
+<p>那么为了解决这种情况，就需要我们去添加一个包含 <code>declare module &#39;jQuery&#39;;</code> 的新声明(.d.ts)文件，文件名无所谓，ts会在所有.d.ts中寻找，是否存在这个模块，那么我们就添加一个这样的文件</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// module.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">module</span> <span class="string">&#x27;jQuery&#x27;</span> &#123;</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">ajax</span>(<span class="params">url: <span class="built_in">string</span></span>): <span class="title class_">Promise</span>&lt;<span class="built_in">any</span>&gt; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样的话，前面的报错就没有了，我们可以正常地使用 jQuery 中 ajax 这个方法了，当然除了手动添加，目前市面上主流的一些js库都有了自己的.d.ts声明文件，可以尝试通过安装依赖 <code>npm i --save-dev @types/jquery</code>，如果存在则会load下来，就不必自行编写了</p>
+<h2 id="全局定义类型和变量"><a href="#全局定义类型和变量" class="headerlink" title="全局定义类型和变量"></a>全局定义类型和变量</h2><p>在ts项目中，我们经常会编写类型，然后定义变量时去使用这些类型，但是如果我们想使用一些全局类型要怎么做？这种情况也可以利用.d.ts，去declare global，那么在全局项目中就能够去用这些类型而无需引入，案例如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">global</span> &#123;</span><br><span class="line">  <span class="keyword">type</span> <span class="title class_">StrNum</span> = <span class="built_in">string</span> | <span class="built_in">number</span></span><br><span class="line">  <span class="keyword">const</span> jc = <span class="string">&#x27;jacky chueng&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 全局声明的类型必须是模块类型，所以至少需要export出去一个&#123;&#125;</span></span><br><span class="line"><span class="keyword">export</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// main.ts</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="attr">str</span>: <span class="title class_">StrNum</span> = <span class="string">&#x27;123&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就可以完成全局的类型定义，但事实上，我们在任意的.d.ts中 declare 的变量或类型，都是能够在全局使用，所以不一定要定义在 global 里面</p>
+<h2 id="访问window上的属性"><a href="#访问window上的属性" class="headerlink" title="访问window上的属性"></a>访问window上的属性</h2><p>例如，一个js库在window上拓展了一些方法，但如果直接使用，ts会提示window上不存在这个方法，所以需要利用 .d.ts 做一些扩展</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// lib.js</span></span><br><span class="line"><span class="variable language_">window</span>.<span class="property">log</span> = <span class="function">(<span class="params">msg</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;msg: &#x27;</span>, msg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="title function_">log</span>(<span class="string">&#x27;hello&#x27;</span>) <span class="comment">// 类型“Window &amp; typeof globalThis”上不存在属性“log”</span></span><br></pre></td></tr></table></figure>
+
+<p>解决如下</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">interface</span> <span class="title class_">Window</span> &#123;</span><br><span class="line">  <span class="attr">log</span>: <span class="function">(<span class="params">msg: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样window中再访问log属性，就能够正常使用了</p>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>js</tag>
+        <tag>ts</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>git提交规范定制流程</title>
     <url>/2022/10/01/commit-lint-steps/</url>
     <content><![CDATA[<h2 id="需要一个git辅助提交工具"><a href="#需要一个git辅助提交工具" class="headerlink" title="需要一个git辅助提交工具"></a>需要一个git辅助提交工具</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>很多人在使用git提交代码的时候，通常会使用命令行，例如 <code>git commit -m &#39;评论组件功能编码&#39;</code>，这样没有问题，甚至你直接使用ide自带的工具也能提交，但是其他人并不知道你这个描述，代表的是哪种提交类型，因为我们希望其他人在看到这条记录的时候，能够一眼就能看出这是哪类的 commit，所以社区内逐渐形成了多种 commit 格式规范，典型的就是<code>约定式提交</code>，或者 <code>conventionalcommits</code>，这是基于angular约定的一种规范，详情可参考<a href="https://www.conventionalcommits.org/en/v1.0.0/">约定式提交规范</a></p>
@@ -108,41 +253,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Javascript红宝书重点记录《基础类型篇》</title>
-    <url>/2022/11/08/base-type/</url>
-    <content><![CDATA[<h2 id="Symbol类型"><a href="#Symbol类型" class="headerlink" title="Symbol类型"></a>Symbol类型</h2><p>Symbol是es6中新增的一种基本数据类型，也可以读成“符号”，其特点如下</p>
-<ol>
-<li><p>不重复性，js中字符串，数字，和对象可以做到完全相等，但Symbol是不存在一模一样的两个值的，即便是 <code>Symbol() == Symbol()</code> 也是false，基于这个特点，当对象的属性为Symbol类型时，是不用担心某些属性会被覆盖的</p>
-</li>
-<li><p>不能使用 new 操作符，Symbol只能用做普通函数调用，当然可以用它的 call，apply，bind</p>
-</li>
-<li><p>可以全局注册Symbol，当采用普通函数调用时，Symbol得到的只是局部的符号值，下一次再调用时会重新注册，但Symbol提供了全局注册方法，<code>Symbol.for</code>，如果全局没有注册，则分配一个内存空间赋予首次的Symbol，下次再此注册时会直接使用内存中的值，所以在这种情况下，就能够得到两个完全相同的Symbol，这与第一点是有区别的，例如</p>
- <figure class="highlight js"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> s = <span class="title class_">Symbol</span>.<span class="title function_">for</span>(<span class="number">1</span>) <span class="comment">// 首次注册</span></span><br><span class="line"><span class="keyword">const</span> ss = <span class="title class_">Symbol</span>.<span class="title function_">for</span>(<span class="number">1</span>) <span class="comment">// 从注册表中获取</span></span><br><span class="line">ss === s <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
-<p> Symbol还提供了与for对应的一个方法，keyFor，这是用来获取传入for参数的方法，因为使用for方法，传入的参数最终都会转换为string类型，所以通过keyFor得到的数据，也都是string，当然如果调用for时没有传，那keyFor得到的也就是undefined</p>
- <figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> sy = <span class="title class_">Symbol</span>.<span class="title function_">for</span>(<span class="literal">true</span>)</span><br><span class="line"><span class="title class_">Symbol</span>.<span class="title function_">keyFor</span>(sy) <span class="comment">// &#x27;true&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>keyFor只能接受Symbol类型，其余类型一概报错</p>
-</blockquote>
-</li>
-<li><p>Symbol函数是接受参数的，该参数是作为该Symbol值的描述，为以后寻找该Symbol提供了追踪依据，参数一般传入的是字符串类型，但实际上能接受任何类型，只不过传入的类型最终都会变成字符串类型，例如数字，布尔会转成字符串，对象类型，会调用其<code>toString</code>方法，返回的结果作为Symbol入参的最终结果</p>
-</li>
-<li><p>Symbol.toPrimitive，当一个对象存在该属性时，如果该对象作隐式类型转换，会优先调用该方法，它的存在使得优先级高于<code>valueOf</code> 和 <code>toString</code>，需要注意，这个属性值必须是函数</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;</span><br><span class="line">  [<span class="title class_">Symbol</span>.<span class="property">toPrimitive</span>](type) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(type)</span><br><span class="line">    <span class="keyword">switch</span> (type) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;string&#x27;</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;messi&#x27;</span></span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;number&#x27;</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="number">35</span></span><br><span class="line">      <span class="attr">default</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;🏆&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">obj + <span class="number">1</span> <span class="comment">// 打印default，+ 运算可以是数字，也可以是字符串不明确，所以为default类型</span></span><br><span class="line">obj * <span class="number">1</span> <span class="comment">// 打印number，因为作数学运算需要转化为number</span></span><br><span class="line"><span class="title class_">Symbol</span>(obj) <span class="comment">// 打印string，Symbol的入参需要转换为string类型</span></span><br></pre></td></tr></table></figure>
-
-<p>也即是说，Symbol.toPrimitive对应的方法，接受的参数类型，是取决于作隐式转换时需要被转换成的数据类型，如果该对象没有这个属性，才去找有没有 <code>valueOf</code> 和 <code>toString</code> 方法</p>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>web</category>
-      </categories>
-      <tags>
-        <tag>js</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>eslint常用推荐配置项</title>
     <url>/2022/10/30/eslint/</url>
     <content><![CDATA[<p>以下是eslint的rules规范</p>
@@ -154,149 +264,6 @@
       </categories>
       <tags>
         <tag>js</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>自定义脚手架</title>
-    <url>/2022/09/30/custom-cli/</url>
-    <content><![CDATA[<h2 id="自定义cli"><a href="#自定义cli" class="headerlink" title="自定义cli"></a>自定义cli</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>先使用npm 或者 yarn，完成package.json 的创建，命令如下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn init -y </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这是默认配置，你也可以不用-y，然后按照它的提示一步一步往下走</span></span><br></pre></td></tr></table></figure>
-
-<p>然后添加命令行入口文件，我是在根目录下建立 <code>cli</code> 文件夹，并添加 <code>index.js</code>，可以先随便写一些内容如下</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;cli start&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<p>这时候我们用node去执行，看看是否有输出</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">node ./cli/index</span><br></pre></td></tr></table></figure>
-
-<p>可以看到确实有输出，但是如何用命令行形式将其输出？例如</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">希望这样的命令行，就能将index.js内容输出</span></span><br><span class="line">jacky</span><br></pre></td></tr></table></figure>
-
-<p>接下来就是生成自定义的cli，很简单其实，往下看</p>
-<h3 id="cli生成"><a href="#cli生成" class="headerlink" title="cli生成"></a>cli生成</h3><p>找到package.json，添加bin字段，并对应配置，如下</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;bin&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jacky&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./cli/index.js&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>意思就是，定义一个cli命令，并且指定其入口执行js文件</p>
-<p>接下来就是，将这个命令链接到全局，我们能够在任何目录下通过这个命令来执行 <code>cli/index.js</code>中的代码<br>操作如下，在项目根目录，执行</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm link</span><br></pre></td></tr></table></figure>
-
-<p>这个时候我们可以查看是否cli命令行已经生成了</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm list -g</span><br></pre></td></tr></table></figure>
-
-<p>这是我们可以尝试在命令行里执行 jakcy，看看有没有反应，结果肯定是报错，因为我们的入口文件，需要指定在node环境下运行，就需要在该文件头部定义</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">#!usr/bin/env node</span><br></pre></td></tr></table></figure>
-
-<p>这样就能够让代码正确运行在node环境，重新执行jacky命令，终端就会输出index.js 内容</p>
-<blockquote>
-<p>需要注意，如果添加头部配置后，重新执行命令依然报错，可以先解除命令，在根目录执行 <code>npm unlink jacky-cli</code>,然后全局卸载掉 <code>npm uninstall jacky-cli</code>, 然后重新 <code>npm link</code>, 这样重新走一遍流程就能解决了</p>
-</blockquote>
-<h3 id="命令行参数"><a href="#命令行参数" class="headerlink" title="命令行参数"></a>命令行参数</h3><p>上面我们介绍了 cli 的最基本配置过程，那么用户在使用 cli 的时候，肯定会有参数支持，例如 vite 支持 –template，rollup 支持 –output，这些就是参数，也就是让命令行走不同的逻辑分支，完成不同功能。</p>
-<h4 id="安装commander依赖"><a href="#安装commander依赖" class="headerlink" title="安装commander依赖"></a>安装commander依赖</h4><p><code>commander</code> 是一款解决命令行问题的npm包，大部分脚手架工具都会安装这个包，安装它的目的就是帮助我们去处理输入的命令参数。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i commander</span><br></pre></td></tr></table></figure>
-
-<p>然后我们可以在 index.js 中添加内容</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要从包里导出program对象</span></span><br><span class="line"><span class="keyword">const</span> &#123; program &#125; = <span class="built_in">require</span>(<span class="string">&quot;commander&quot;</span>);</span><br><span class="line"></span><br><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;init&#x27;</span>) <span class="comment">// 配置命令 =&gt; jacky init</span></span><br><span class="line">  .<span class="title function_">option</span>(<span class="string">&#x27;--type &lt;char&gt;&#x27;</span>, <span class="string">&#x27;input your type&#x27;</span>, <span class="string">&#x27;vue&#x27;</span>) <span class="comment">// 配置参数 =&gt; jacky init --type react</span></span><br><span class="line">  .<span class="title function_">action</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res)</span><br><span class="line">    <span class="comment">// &#123; type: &#x27;react&#x27; &#125;</span></span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解析输入的命令参数</span></span><br><span class="line">program.<span class="title function_">parse</span>(process.<span class="property">argv</span>)</span><br></pre></td></tr></table></figure>
-
-<p>commander 包提供了一个 program 的对象，方便我们快速地对命令行内容操作和配置，当然它内部还提供了更强大的功能，有兴趣可以移步官网<br>这里重点介绍program对象</p>
-<ul>
-<li>command方法，定义命令名称，配置后会生成如，<code>jacky init</code>的命令</li>
-<li>option方法，定义命令参数，是针对上述命令完成进一步配置的，可设置多个option，可以接受三个参数<ul>
-<li>参数1，参数名称和类型，必填</li>
-<li>参数2，参数类型说明，可选</li>
-<li>参数3，参数默认值，可选</li>
-</ul>
-</li>
-<li>action方法，在输入完命令后的回调函数，接收的参数就是输入的命令内容组成的对象</li>
-</ul>
-<h4 id="安装inquirer依赖"><a href="#安装inquirer依赖" class="headerlink" title="安装inquirer依赖"></a>安装inquirer依赖</h4><p>inquirer是提供给用户在命令行交互的包，例如询问，输入，选择等多种交互方式</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i inquirer</span><br></pre></td></tr></table></figure>
-
-<p>然后我们在index.js 中再添加一条命令，并且加入交互操作</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  .<span class="title function_">action</span>(<span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="title function_">prompt</span>([</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="string">&#x27;input&#x27;</span>, <span class="comment">// 交互类型，输入形式</span></span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;name&#x27;</span>, <span class="comment">// 字段名称</span></span><br><span class="line">        <span class="attr">default</span>: <span class="string">&#x27;jacky cheung&#x27;</span>, <span class="comment">// 默认值</span></span><br><span class="line">        <span class="attr">message</span>: <span class="string">&#x27;please input your name&#x27;</span> <span class="comment">// 交互信息</span></span><br><span class="line">      &#125;</span><br><span class="line">    ])</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;res: &#x27;</span>, res)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
-
-<p>然后我们敲下 <code>jacky create</code>, 终端会出现提示，然后我们输入一些内容，看看会是什么现象</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PS D:\JackyProgram\jacky-cli&gt; jacky create    </span><br><span class="line">? please input your name jacky cheung</span><br><span class="line">res:  &#123; name: &#x27;jacky cheung&#x27; &#125;</span><br></pre></td></tr></table></figure>
-
-<p>打印的结果就是，将prompt配置的字段整合为一个对象，当然这里介绍的都是基本操作，更多的api请参考官网，这里是做铺垫为了后面的项目</p>
-<p>propmt接受的是一个数组，也就是询问的条数</p>
-<ul>
-<li>type，交互类型，如 input, confirm, checkbox, list, number, password等</li>
-<li>name，字段名称，也就是最终prompt的返回的结果，由这些字段组装而成</li>
-<li>default，字段默认值，如果直接按回车，就以该值作为输入值</li>
-<li>message，交互提示说明文字，在交互时会给予提示</li>
-</ul>
-<p>prompt本身返回一个promise，所以你可以使用 <code>async/await</code>，也可以使用 <code>.then</code> 形式做后续操作。</p>
-<h2 id="实现Git规范"><a href="#实现Git规范" class="headerlink" title="实现Git规范"></a>实现Git规范</h2><p>前面的内容已经介绍了如何完成简单的cli，并且能够处理命令和交互，这一节我们讨论如何利用cli实现对git方面的提交约束</p>
-<h3 id="jacky-git-命令"><a href="#jacky-git-命令" class="headerlink" title="jacky git 命令"></a>jacky git 命令</h3><p>我们期望有这样一个命令，<code>jacky git</code>，然后通过参数，完成对git规范的配置，配置git规范的流程见另一篇文章<br><a href="/2022/10/01/commit-lint-steps/">git提交规范定制流程</a></p>
-]]></content>
-      <categories>
-        <category>web</category>
-      </categories>
-      <tags>
-        <tag>node.js</tag>
-        <tag>cli</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ts声明文件</title>
-    <url>/2022/10/16/ts-declare/</url>
-    <content><![CDATA[<h2 id="d-ts介绍"><a href="#d-ts介绍" class="headerlink" title=".d.ts介绍"></a>.d.ts介绍</h2><p>.d.ts 一个作用是提供给js开发者，尤其是库的开发中，声明变量类型用的，因为在用js编写的代码中，是没有类型而言的，所以如果ts项目中，又引入了这些js文件，那么在使用中是肯定会报错的，看个例子</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// func.js</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min, max</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> min + (max - min) * <span class="title class_">Math</span>.<span class="title function_">random</span>()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; getRandom &#125; <span class="keyword">from</span> <span class="string">&#x27;./utils/func&#x27;</span> <span class="comment">// 无法找到模块“./utils/func”的声明文件。“func.js”隐式拥有 &quot;any&quot; 类型。ts(7016)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> res = <span class="title function_">getRandom</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
-
-<p>这里直接在引用的时候就直接报错了，因为ts根本就识别不了这个js文件模块，那么这种情况就需要去写一个同名的 <code>func.d.ts</code>去实现</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// func.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">function</span> <span class="title function_">getRandom</span>(<span class="params">min: <span class="built_in">number</span>, max: <span class="built_in">number</span></span>): <span class="built_in">number</span></span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  getRandom</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这个文件的位置无所谓，ts会在项目中扫码，直到找到这个.d.ts为止，所以放在哪都行</p>
-<h2 id="为外部js模块添加类型"><a href="#为外部js模块添加类型" class="headerlink" title="为外部js模块添加类型"></a>为外部js模块添加类型</h2><p>比如当你的项目中引入了 <code>demo.js</code>，这个js文件是从npm上下载的，但开发人员当初在编写代码时是使用的纯js，而你的项目是使用ts的，所以当你从这个库里面导入某些方法或变量时，ts会提示你没有这个模块，示例如下</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; ajax &#125; <span class="keyword">from</span> <span class="string">&#x27;jQuery&#x27;</span> <span class="comment">// 无法找到模块“jQuery”的声明文件。“/node_modules/jQuery/dist/jquery.js”隐式拥有 &quot;any&quot; 类型。</span></span><br></pre></td></tr></table></figure>
-
-<p>那么为了解决这种情况，就需要我们去添加一个包含 <code>declare module &#39;jQuery&#39;;</code> 的新声明(.d.ts)文件，文件名无所谓，ts会在所有.d.ts中寻找，是否存在这个模块，那么我们就添加一个这样的文件</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// module.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">module</span> <span class="string">&#x27;jQuery&#x27;</span> &#123;</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">ajax</span>(<span class="params">url: <span class="built_in">string</span></span>): <span class="title class_">Promise</span>&lt;<span class="built_in">any</span>&gt; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这样的话，前面的报错就没有了，我们可以正常地使用 jQuery 中 ajax 这个方法了，当然除了手动添加，目前市面上主流的一些js库都有了自己的.d.ts声明文件，可以尝试通过安装依赖 <code>npm i --save-dev @types/jquery</code>，如果存在则会load下来，就不必自行编写了</p>
-<h2 id="全局定义类型和变量"><a href="#全局定义类型和变量" class="headerlink" title="全局定义类型和变量"></a>全局定义类型和变量</h2><p>在ts项目中，我们经常会编写类型，然后定义变量时去使用这些类型，但是如果我们想使用一些全局类型要怎么做？这种情况也可以利用.d.ts，去declare global，那么在全局项目中就能够去用这些类型而无需引入，案例如下</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="variable language_">global</span> &#123;</span><br><span class="line">  <span class="keyword">type</span> <span class="title class_">StrNum</span> = <span class="built_in">string</span> | <span class="built_in">number</span></span><br><span class="line">  <span class="keyword">const</span> jc = <span class="string">&#x27;jacky chueng&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 全局声明的类型必须是模块类型，所以至少需要export出去一个&#123;&#125;</span></span><br><span class="line"><span class="keyword">export</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// main.ts</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="attr">str</span>: <span class="title class_">StrNum</span> = <span class="string">&#x27;123&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>这样就可以完成全局的类型定义，但事实上，我们在任意的.d.ts中 declare 的变量或类型，都是能够在全局使用，所以不一定要定义在 global 里面</p>
-<h2 id="访问window上的属性"><a href="#访问window上的属性" class="headerlink" title="访问window上的属性"></a>访问window上的属性</h2><p>例如，一个js库在window上拓展了一些方法，但如果直接使用，ts会提示window上不存在这个方法，所以需要利用 .d.ts 做一些扩展</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// lib.js</span></span><br><span class="line"><span class="variable language_">window</span>.<span class="property">log</span> = <span class="function">(<span class="params">msg</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;msg: &#x27;</span>, msg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="title function_">log</span>(<span class="string">&#x27;hello&#x27;</span>) <span class="comment">// 类型“Window &amp; typeof globalThis”上不存在属性“log”</span></span><br></pre></td></tr></table></figure>
-
-<p>解决如下</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// global.d.ts</span></span><br><span class="line"><span class="keyword">declare</span> <span class="keyword">interface</span> <span class="title class_">Window</span> &#123;</span><br><span class="line">  <span class="attr">log</span>: <span class="function">(<span class="params">msg: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>这样window中再访问log属性，就能够正常使用了</p>
-]]></content>
-      <categories>
-        <category>web</category>
-      </categories>
-      <tags>
-        <tag>js</tag>
-        <tag>ts</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ts 中 is 关键字的用法</title>
-    <url>/2022/10/20/ts-is/</url>
-    <content><![CDATA[<p>is 可以看作一种特殊的 boolean 类型，并且用于函数的返回类型，先看一个例子</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">isString</span>(<span class="params">val: <span class="built_in">string</span> | <span class="built_in">number</span></span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> val === <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;string type&#x27;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;number type&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">returnReq</span>(<span class="params">val: <span class="built_in">string</span> | <span class="built_in">number</span></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> req</span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">isString</span>(val)) &#123;</span><br><span class="line">    req = &#123;</span><br><span class="line">      <span class="attr">len</span>: val.<span class="property">length</span> <span class="comment">// 类型“number”上不存在属性“length”。</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    req = &#123;</span><br><span class="line">      <span class="attr">len</span>: val.<span class="title function_">toString</span>().<span class="property">length</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(req)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这段code的意思是，isString用作是否为 string 的判断，returnReq 函数用作返回一个对象格式的报文，但这样的代码是会报错的，虽然 isString 函数限制了输入类型仅为 string 或 number，并且能准确返回值 true&#x2F;false，但是 ts 是在编译阶段起作用的，至于真正运行时是什么样子，是不知道的，所以即使isString函数没有问题，但是在尝试访问 val.length 时，val的类型依然时 string | number，所以number身上不存在 length，因此报错。</p>
-<p>为了解决这个问题，is 就可以派上用场了，它的用法非常简单，只需要在函数的返回值后面加上 xx is yourType</p>
-<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">isString</span>(<span class="params">val: <span class="built_in">string</span> | <span class="built_in">number</span></span>): val is <span class="built_in">string</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> val === <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;string type&#x27;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;number type&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果这样的话，在当 isString(val) 返回为 true 的情况下，val的类型就被约束成更精确的 string，否则将被推断成 number，所以后续对val.length 的操作就不会提示报错了</p>
-<p>简单总结下</p>
-<p>如果一个函数的参数被is限定了某种类型T，那么在当这个函数执行返回true的时候，这时参数的类型就是之前限定的T，反之就是除了T之外的类型，当然 is 的使用场景在实际中，可以被 as 断言去替换，所以使用的情况就因人而异了</p>
-]]></content>
-      <categories>
-        <category>web</category>
-      </categories>
-      <tags>
-        <tag>js</tag>
-        <tag>ts</tag>
       </tags>
   </entry>
   <entry>
@@ -443,6 +410,108 @@
 <blockquote>
 <p>但这样还是会有一个小问题，如果某个值是可选，但类型为undefined，此时是无法将这个k给选出来的，但这样声明是毫无意义的，所以忽略</p>
 </blockquote>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>js</tag>
+        <tag>ts</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>自定义脚手架</title>
+    <url>/2022/09/30/custom-cli/</url>
+    <content><![CDATA[<h2 id="自定义cli"><a href="#自定义cli" class="headerlink" title="自定义cli"></a>自定义cli</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>先使用npm 或者 yarn，完成package.json 的创建，命令如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yarn init -y </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这是默认配置，你也可以不用-y，然后按照它的提示一步一步往下走</span></span><br></pre></td></tr></table></figure>
+
+<p>然后添加命令行入口文件，我是在根目录下建立 <code>cli</code> 文件夹，并添加 <code>index.js</code>，可以先随便写一些内容如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;cli start&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这时候我们用node去执行，看看是否有输出</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">node ./cli/index</span><br></pre></td></tr></table></figure>
+
+<p>可以看到确实有输出，但是如何用命令行形式将其输出？例如</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">希望这样的命令行，就能将index.js内容输出</span></span><br><span class="line">jacky</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是生成自定义的cli，很简单其实，往下看</p>
+<h3 id="cli生成"><a href="#cli生成" class="headerlink" title="cli生成"></a>cli生成</h3><p>找到package.json，添加bin字段，并对应配置，如下</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;bin&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jacky&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./cli/index.js&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>意思就是，定义一个cli命令，并且指定其入口执行js文件</p>
+<p>接下来就是，将这个命令链接到全局，我们能够在任何目录下通过这个命令来执行 <code>cli/index.js</code>中的代码<br>操作如下，在项目根目录，执行</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm link</span><br></pre></td></tr></table></figure>
+
+<p>这个时候我们可以查看是否cli命令行已经生成了</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm list -g</span><br></pre></td></tr></table></figure>
+
+<p>这是我们可以尝试在命令行里执行 jakcy，看看有没有反应，结果肯定是报错，因为我们的入口文件，需要指定在node环境下运行，就需要在该文件头部定义</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">#!usr/bin/env node</span><br></pre></td></tr></table></figure>
+
+<p>这样就能够让代码正确运行在node环境，重新执行jacky命令，终端就会输出index.js 内容</p>
+<blockquote>
+<p>需要注意，如果添加头部配置后，重新执行命令依然报错，可以先解除命令，在根目录执行 <code>npm unlink jacky-cli</code>,然后全局卸载掉 <code>npm uninstall jacky-cli</code>, 然后重新 <code>npm link</code>, 这样重新走一遍流程就能解决了</p>
+</blockquote>
+<h3 id="命令行参数"><a href="#命令行参数" class="headerlink" title="命令行参数"></a>命令行参数</h3><p>上面我们介绍了 cli 的最基本配置过程，那么用户在使用 cli 的时候，肯定会有参数支持，例如 vite 支持 –template，rollup 支持 –output，这些就是参数，也就是让命令行走不同的逻辑分支，完成不同功能。</p>
+<h4 id="安装commander依赖"><a href="#安装commander依赖" class="headerlink" title="安装commander依赖"></a>安装commander依赖</h4><p><code>commander</code> 是一款解决命令行问题的npm包，大部分脚手架工具都会安装这个包，安装它的目的就是帮助我们去处理输入的命令参数。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i commander</span><br></pre></td></tr></table></figure>
+
+<p>然后我们可以在 index.js 中添加内容</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要从包里导出program对象</span></span><br><span class="line"><span class="keyword">const</span> &#123; program &#125; = <span class="built_in">require</span>(<span class="string">&quot;commander&quot;</span>);</span><br><span class="line"></span><br><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;init&#x27;</span>) <span class="comment">// 配置命令 =&gt; jacky init</span></span><br><span class="line">  .<span class="title function_">option</span>(<span class="string">&#x27;--type &lt;char&gt;&#x27;</span>, <span class="string">&#x27;input your type&#x27;</span>, <span class="string">&#x27;vue&#x27;</span>) <span class="comment">// 配置参数 =&gt; jacky init --type react</span></span><br><span class="line">  .<span class="title function_">action</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res)</span><br><span class="line">    <span class="comment">// &#123; type: &#x27;react&#x27; &#125;</span></span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解析输入的命令参数</span></span><br><span class="line">program.<span class="title function_">parse</span>(process.<span class="property">argv</span>)</span><br></pre></td></tr></table></figure>
+
+<p>commander 包提供了一个 program 的对象，方便我们快速地对命令行内容操作和配置，当然它内部还提供了更强大的功能，有兴趣可以移步官网<br>这里重点介绍program对象</p>
+<ul>
+<li>command方法，定义命令名称，配置后会生成如，<code>jacky init</code>的命令</li>
+<li>option方法，定义命令参数，是针对上述命令完成进一步配置的，可设置多个option，可以接受三个参数<ul>
+<li>参数1，参数名称和类型，必填</li>
+<li>参数2，参数类型说明，可选</li>
+<li>参数3，参数默认值，可选</li>
+</ul>
+</li>
+<li>action方法，在输入完命令后的回调函数，接收的参数就是输入的命令内容组成的对象</li>
+</ul>
+<h4 id="安装inquirer依赖"><a href="#安装inquirer依赖" class="headerlink" title="安装inquirer依赖"></a>安装inquirer依赖</h4><p>inquirer是提供给用户在命令行交互的包，例如询问，输入，选择等多种交互方式</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm i inquirer</span><br></pre></td></tr></table></figure>
+
+<p>然后我们在index.js 中再添加一条命令，并且加入交互操作</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">program</span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  .<span class="title function_">action</span>(<span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="title function_">prompt</span>([</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="string">&#x27;input&#x27;</span>, <span class="comment">// 交互类型，输入形式</span></span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;name&#x27;</span>, <span class="comment">// 字段名称</span></span><br><span class="line">        <span class="attr">default</span>: <span class="string">&#x27;jacky cheung&#x27;</span>, <span class="comment">// 默认值</span></span><br><span class="line">        <span class="attr">message</span>: <span class="string">&#x27;please input your name&#x27;</span> <span class="comment">// 交互信息</span></span><br><span class="line">      &#125;</span><br><span class="line">    ])</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;res: &#x27;</span>, res)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>然后我们敲下 <code>jacky create</code>, 终端会出现提示，然后我们输入一些内容，看看会是什么现象</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PS D:\JackyProgram\jacky-cli&gt; jacky create    </span><br><span class="line">? please input your name jacky cheung</span><br><span class="line">res:  &#123; name: &#x27;jacky cheung&#x27; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>打印的结果就是，将prompt配置的字段整合为一个对象，当然这里介绍的都是基本操作，更多的api请参考官网，这里是做铺垫为了后面的项目</p>
+<p>propmt接受的是一个数组，也就是询问的条数</p>
+<ul>
+<li>type，交互类型，如 input, confirm, checkbox, list, number, password等</li>
+<li>name，字段名称，也就是最终prompt的返回的结果，由这些字段组装而成</li>
+<li>default，字段默认值，如果直接按回车，就以该值作为输入值</li>
+<li>message，交互提示说明文字，在交互时会给予提示</li>
+</ul>
+<p>prompt本身返回一个promise，所以你可以使用 <code>async/await</code>，也可以使用 <code>.then</code> 形式做后续操作。</p>
+<h2 id="实现Git规范"><a href="#实现Git规范" class="headerlink" title="实现Git规范"></a>实现Git规范</h2><p>前面的内容已经介绍了如何完成简单的cli，并且能够处理命令和交互，这一节我们讨论如何利用cli实现对git方面的提交约束</p>
+<h3 id="jacky-git-命令"><a href="#jacky-git-命令" class="headerlink" title="jacky git 命令"></a>jacky git 命令</h3><p>我们期望有这样一个命令，<code>jacky git</code>，然后通过参数，完成对git规范的配置，配置git规范的流程见另一篇文章<br><a href="/2022/10/01/commit-lint-steps/">git提交规范定制流程</a></p>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>node.js</tag>
+        <tag>cli</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ts 中 is 关键字的用法</title>
+    <url>/2022/10/20/ts-is/</url>
+    <content><![CDATA[<p>is 可以看作一种特殊的 boolean 类型，并且用于函数的返回类型，先看一个例子</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">isString</span>(<span class="params">val: <span class="built_in">string</span> | <span class="built_in">number</span></span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> val === <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;string type&#x27;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;number type&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">returnReq</span>(<span class="params">val: <span class="built_in">string</span> | <span class="built_in">number</span></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> req</span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">isString</span>(val)) &#123;</span><br><span class="line">    req = &#123;</span><br><span class="line">      <span class="attr">len</span>: val.<span class="property">length</span> <span class="comment">// 类型“number”上不存在属性“length”。</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    req = &#123;</span><br><span class="line">      <span class="attr">len</span>: val.<span class="title function_">toString</span>().<span class="property">length</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(req)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段code的意思是，isString用作是否为 string 的判断，returnReq 函数用作返回一个对象格式的报文，但这样的代码是会报错的，虽然 isString 函数限制了输入类型仅为 string 或 number，并且能准确返回值 true&#x2F;false，但是 ts 是在编译阶段起作用的，至于真正运行时是什么样子，是不知道的，所以即使isString函数没有问题，但是在尝试访问 val.length 时，val的类型依然时 string | number，所以number身上不存在 length，因此报错。</p>
+<p>为了解决这个问题，is 就可以派上用场了，它的用法非常简单，只需要在函数的返回值后面加上 xx is yourType</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">isString</span>(<span class="params">val: <span class="built_in">string</span> | <span class="built_in">number</span></span>): val is <span class="built_in">string</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> val === <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;string type&#x27;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;number type&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果这样的话，在当 isString(val) 返回为 true 的情况下，val的类型就被约束成更精确的 string，否则将被推断成 number，所以后续对val.length 的操作就不会提示报错了</p>
+<p>简单总结下</p>
+<p>如果一个函数的参数被is限定了某种类型T，那么在当这个函数执行返回true的时候，这时参数的类型就是之前限定的T，反之就是除了T之外的类型，当然 is 的使用场景在实际中，可以被 as 断言去替换，所以使用的情况就因人而异了</p>
 ]]></content>
       <categories>
         <category>web</category>
