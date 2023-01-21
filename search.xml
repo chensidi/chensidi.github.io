@@ -653,4 +653,178 @@
         <tag>vite</tag>
       </tags>
   </entry>
+  <entry>
+    <title>js-tools-lib</title>
+    <url>/2023/01/21/js-tools-lib/</url>
+    <content><![CDATA[<h2 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h2><ul>
+<li>梳理总结自己这些年的JS开发经验，手动实现各种原生方法有利于更深刻理解这些api，同时提高自己JS功力</li>
+<li>帮助各位初学者或者JS基本功需要提升的同学，看看这些功能换成你是否能够写出来</li>
+<li>总结和提升自己编写js&#x2F;ts库的设计编写，以及如何利用主流构建工具build出适合各种环境的产物</li>
+<li>这些实现的方法会集成到本人的工具库里面，发布至npm，各位可下载讨论和使用，当然主要的目的是提高一个造轮子能力，实际开发还是以原生官方api为优先</li>
+</ul>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm i jacky-js-tools</span><br></pre></td></tr></table></figure>
+
+<h2 id="方法函数清单"><a href="#方法函数清单" class="headerlink" title="方法函数清单"></a>方法函数清单</h2><p>本lib库利用ts实现了各种原生es的方法，为了与原生方法区分，所有方法统一在前面增加了<code>o</code>的前缀，例如 <code>oMap</code> 对应是 原生数组的 <code>map</code> 方法，但需要主要的是，本lib库中实现的方法并没有挂载到对应数组或对象的原型链上，所以调用的时候，需要将原数组或对象传入函数，例如</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原生array的map方法调用</span></span><br><span class="line"><span class="keyword">const</span> res = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>].<span class="title function_">map</span>(<span class="function"><span class="params">item</span> =&gt;</span> item * <span class="number">2</span>)</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(res) <span class="comment">// [2, 4, 6]</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 导入本库里面的oMap后调用</span></span><br><span class="line"><span class="keyword">import</span> &#123; oMap &#125; <span class="keyword">from</span> <span class="string">&#x27;jacky-js-tools&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> res = <span class="title function_">oMap</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>], <span class="function"><span class="params">item</span> =&gt;</span> item * <span class="number">2</span>)</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(res) <span class="comment">// [2, 4, 6]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 以此类推后续所以方法，总之第一个参数为数组本身，后续参数与js原生方法保持一致即可，不再赘述</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意，如果原生js数组的某方法会改变数组本身，则该库实现的方法也会改变数组本身，这个特性和原生js保持一致的，反之亦然</p>
+</blockquote>
+<h3 id="Array数组原生方法的实现"><a href="#Array数组原生方法的实现" class="headerlink" title="Array数组原生方法的实现"></a>Array数组原生方法的实现</h3><ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oMap(arr: any[], callback: (item: any, index?: number, arr?: any[]) =&gt; any[])</code><br>对应原生js中array的map方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oFill(arr: any[], arr: any[], value: any, start = 0, end = arr.length)</code><br>对应原生js中array的fill方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oFilter(arr: any[], callback: (item: any, index?: number, arr?: any[]) =&gt; any[])</code><br>对应原生js中array的filter方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oAt(arr: any[], index: number)</code><br>对应原生js中array的at方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oConcat(arr: any[], ...rest: any[]): any[]</code><br>对应原生js中array的concat方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oFind(arr: any[], callback: (item: any, index?: number, arr?: any[]) =&gt; boolean, thisArg?: any): any</code><br>对应原生js中array的find方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oFindIndex(arr: any[], callback: (item: any, index?: number, arr?: any[]) =&gt; boolean, thisArg?: any): number</code><br>对应原生js中array的findIndex方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oFindLast(arr: any[], callback: (item: any, index?: number, arr?: any[]) =&gt; boolean, thisArg?: any): number</code><br>对应原生js中array的findLast方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oFindLastIndex(arr: any[], callback: (item: any, index?: number, arr?: any[]) =&gt; boolean, thisArg?: any): number</code><br>对应原生js中array的findLastIndex方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oFlat(arr: any[], deep: number = Infinity): any[]</code><br>对应原生js中array的flat方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oForEach(arr: any[], callback: (item: any, index?: number, arr?: any[]) =&gt; any): any[]</code><br>对应原生js中array的forEach方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oIncludes(arr: any[], item: any, fromIndex = 0): boolean</code><br>对应原生js中array的includes方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oIndexOf(arr: any[], item: any, fromIndex = 0): number</code><br>对应原生js中array的indexOf方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oIsArray(arr: any): boolean</code><br>对应原生js中array的isArray方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oJoin(arr: any[], flag: string = &#39;,&#39;): string</code><br>对应原生js中array的join方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oArrKeys(arr: any[]): Iterable&lt;number&gt;</code><br>对应原生js中array的keys方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oArrEntries(arr: any[]): Iterable&lt;[number, any][]&gt;</code><br>对应原生js中array的entries方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oReduce(arr: any[], callback: ReduceCallback, initVal?: any)</code><br>对应原生js中array的reduce方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oEvery(arr: any[], callback: (item: any, index?: number, arr?: any[]) =&gt; any, thisArg?: any): boolean</code><br>对应原生js中array的every方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oSome(arr: any[], callback: (item: any, index?: number, arr?: any[]) =&gt; any, thisArg?: any): boolean</code><br>对应原生js中array的some方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oReverse(arr: any[])</code><br>对应原生js中array的reverse方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oPush(arr: any[], ...rest: any[]): number</code><br>对应原生js中array的push方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oPop(arr: any[])</code><br>对应原生js中array的pop方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oShift(arr: any[])</code><br>对应原生js中array的shift方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oUnshift(arr: any[], ...rest: any[]): number</code><br>对应原生js中array的unshift方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oSlice(arr: any[], start = 0, end = Infinity): any[]</code><br>对应原生js中array的slice方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oSplice(arr: any[], start: number, deleteCount: number, ...rest: any[])</code><br>对应原生js中array的splice方法</p>
+</li>
+</ul>
+<h3 id="String字符串原生方法的实现"><a href="#String字符串原生方法的实现" class="headerlink" title="String字符串原生方法的实现"></a>String字符串原生方法的实现</h3><blockquote>
+<p>字符串的方法，以 <code>oStr</code> 为前缀，例如 <code>oStrStartsWith</code> 对应原生 <code>startsWith</code>, 传参方式依旧，第一个参数是目标字符串本身，后续参数按原生方法中的顺序传入， 示例如下</p>
+</blockquote>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 原生js方法</span></span><br><span class="line"><span class="keyword">const</span> str = <span class="string">&#x27;Jacky Chueng&#x27;</span></span><br><span class="line">str.<span class="title function_">startsWith</span>(<span class="string">&#x27;Jacky&#x27;</span>) <span class="comment">// true</span></span><br><span class="line">str.<span class="title function_">startsWith</span>(<span class="string">&#x27;Jacky&#x27;</span>, <span class="number">1</span>) <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 本库中方法</span></span><br><span class="line"><span class="keyword">import</span> &#123; oStrStartsWith &#125; <span class="keyword">from</span> <span class="string">&#x27;jacky-js-tools&#x27;</span></span><br><span class="line"><span class="keyword">const</span> str = <span class="string">&#x27;Jacky Chueng&#x27;</span></span><br><span class="line"><span class="title function_">oStrStartsWith</span>(str, <span class="string">&#x27;Jacky&#x27;</span>) <span class="comment">// true</span></span><br><span class="line"><span class="title function_">oStrStartsWith</span>(str, <span class="string">&#x27;Jacky&#x27;</span>, <span class="number">1</span>) <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStringIterator(str: string)</code><br>这是用来生成字符串迭代器的方法</p>
+<figure class="highlight ts"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> str = <span class="string">&#x27;123&#x27;</span></span><br><span class="line">  <span class="keyword">const</span> <span class="attr">arr</span>: <span class="built_in">string</span>[] = []</span><br><span class="line">  <span class="keyword">const</span> itr = <span class="title function_">oStringIterator</span>(str)</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> item <span class="keyword">of</span> itr) &#123;</span><br><span class="line">    arr.<span class="title function_">push</span>(item)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(arr) <span class="comment">// [&#x27;1&#x27;, &#x27;2&#x27;, &#x27;3&#x27;]</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStringGenerator(str: string)</code><br>这是也用来生成字符串迭代器的方法，只不过使用 generator 函数实现，调用方式与上一个一致</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrAt(str: string, index: number): string</code><br>对应原生string的 <code>at</code> 方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrCharAt(str: string, index: number): string</code><br>对应原生string的 <code>charAt</code> 方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrStartsWith(str: string, subStr: string, position = 0): boolean</code><br>对应原生string的 <code>startsWith</code> 方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrEndsWith(str: string, subStr: string, length = str.length): boolean</code><br>对应原生string的 <code>endsWith</code> 方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrIncludes(str: string, subStr: string, position = 0): boolean</code><br>对应原生string的 <code>includes</code> 方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrIndexOf(str: string, subStr: string, position = 0): number</code><br>对应原生string的 <code>indexOf</code> 方法</p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrLastIndexOf(str: string, subStr?: string, position = +Infinity)</code><br>对应原生string的 <code>lastIndexOf</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrLastIndexOf(str: string, subStr?: string, position = +Infinity)</code><br>对应原生string的 <code>lastIndexOf</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrPadStart(str: string, targetLength?: number, padString = &#39; &#39;)</code><br>对应原生string的 <code>padStart</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrPadEnd(str: string, targetLength?: number, padString = &#39; &#39;)</code><br>对应原生string的 <code>padEnd</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrSlice(str: string, startIndex = 0, endIndex = str.length)</code><br>对应原生string的 <code>slice</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrSubString(str: string, startIndex = 0, endIndex = str.length)</code><br>对应原生string的 <code>substring</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrTrim(str: string)</code><br>对应原生string的 <code>trim</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrTrimStart(str: string)</code><br>对应原生string的 <code>trimStart</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<code>oStrTrimEnd(str: string)</code><br>对应原生string的 <code>trimEnd</code></p>
+</li>
+</ul>
+<p>目前Array, String的方法大部分已经实现, number相关的方法正在实现中… 功能清单正在抓紧时间更新同步中，大家可以通过vscode提示找到对应函数，也可以通过编辑器自动提示导出对应函数，也可以通过上GitHub找到该项目的测试用例查看调用方法</p>
+]]></content>
+      <categories>
+        <category>web</category>
+      </categories>
+      <tags>
+        <tag>js</tag>
+        <tag>ts</tag>
+        <tag>构建工具</tag>
+      </tags>
+  </entry>
 </search>
